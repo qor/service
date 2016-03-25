@@ -285,8 +285,10 @@ func (meta *Meta) updateMeta() {
 			} else if f, ok := meta.Collection.(func(interface{}, *qor.Context) [][]string); ok {
 				meta.GetCollection = f
 			} else {
-				utils.ExitWithMsg("Unsupported Collection format for meta %v of resource %v", meta.Name, reflect.TypeOf(meta.baseResource.Value))
+				utils.ExitWithMsg(fmt.Sprintf("Unsupported Collection format for meta %v of resource %v", meta.Name, reflect.TypeOf(meta.baseResource.Value)))
 			}
+		} else if meta.GetCollection != nil {
+			// GetCollection is already defined; pass
 		} else if meta.Type == "select_one" || meta.Type == "select_many" {
 			if scopeField.Relationship != nil {
 				fieldType := scopeField.StructField.Struct.Type
@@ -306,7 +308,7 @@ func (meta *Meta) updateMeta() {
 					return
 				}
 			} else {
-				utils.ExitWithMsg("%v meta type %v needs Collection", meta.Name, meta.Type)
+				utils.ExitWithMsg(fmt.Sprintf("%v meta type %v needs Collection", meta.Name, meta.Type))
 			}
 		}
 	}
