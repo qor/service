@@ -7,6 +7,7 @@ import (
 	"path"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/qor/qor"
@@ -39,8 +40,10 @@ func (middleware Middleware) Next(context *Context) {
 // Router contains registered routers
 type Router struct {
 	Prefix      string
-	routers     map[string][]routeHandler
 	middlewares []*Middleware
+
+	routers      map[string][]routeHandler
+	routersMutex sync.RWMutex
 }
 
 func newRouter() *Router {
@@ -76,22 +79,30 @@ func (r *Router) Use(middleware *Middleware) {
 
 // Get register a GET request handle with the given path
 func (r *Router) Get(path string, handle requestHandler, config ...RouteConfig) {
+	r.routersMutex.Lock()
 	r.routers["GET"] = append(r.routers["GET"], newRouteHandler(path, handle, config...))
+	r.routersMutex.Unlock()
 }
 
 // Post register a POST request handle with the given path
 func (r *Router) Post(path string, handle requestHandler, config ...RouteConfig) {
+	r.routersMutex.Lock()
 	r.routers["POST"] = append(r.routers["POST"], newRouteHandler(path, handle, config...))
+	r.routersMutex.Unlock()
 }
 
 // Put register a PUT request handle with the given path
 func (r *Router) Put(path string, handle requestHandler, config ...RouteConfig) {
+	r.routersMutex.Lock()
 	r.routers["PUT"] = append(r.routers["PUT"], newRouteHandler(path, handle, config...))
+	r.routersMutex.Unlock()
 }
 
 // Delete register a DELETE request handle with the given path
 func (r *Router) Delete(path string, handle requestHandler, config ...RouteConfig) {
+	r.routersMutex.Lock()
 	r.routers["DELETE"] = append(r.routers["DELETE"], newRouteHandler(path, handle, config...))
+	r.routersMutex.Unlock()
 }
 
 // MountTo mount the service into mux (HTTP request multiplexer) with given path
@@ -305,7 +316,9 @@ func (admin *Admin) compile() {
 				"/",
 			)
 
+			router.routersMutex.RLock()
 			handlers := router.routers[strings.ToUpper(request.Method)]
+			router.routersMutex.RUnlock()
 			for _, handler := range handlers {
 				if params, ok := handler.try(relativePath); ok && handler.HasPermission(context.Context) {
 					if len(params) > 0 {
@@ -331,8 +344,22 @@ func (admin *Admin) compile() {
 	})
 }
 
+type responseWriter struct {
+	writer http.ResponseWriter
+	status int
+}
+
+func (rw *responseWriter) Header() http.Header           { return rw.writer.Header() }
+func (rw *responseWriter) Write(buf []byte) (int, error) { return rw.writer.Write(buf) }
+func (rw *responseWriter) WriteHeader(status int) {
+	rw.status = status
+	rw.writer.WriteHeader(status)
+}
+
 // ServeHTTP dispatches the handler registered in the matched route
 func (admin *Admin) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	w = &responseWriter{writer: w, status: 200}
+
 	var relativePath = strings.TrimPrefix(req.URL.Path, admin.router.Prefix)
 	var context = admin.NewContext(w, req)
 
@@ -344,7 +371,13 @@ func (admin *Admin) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	defer func() func() {
 		begin := time.Now()
 		return func() {
-			log.Printf("Finish [%s] %s Took %.2fms\n", req.Method, req.RequestURI, time.Now().Sub(begin).Seconds()*1000)
+			log.Printf(
+				"[QOR] (%s) %d %s %s Took %.2fms\n",
+				time.Now().Format("2006-01-02 15:04:05"),
+				w.(*responseWriter).status,
+				req.Method, req.RequestURI,
+				time.Now().Sub(begin).Seconds()*1000,
+			)
 		}
 	}()()
 

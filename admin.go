@@ -3,6 +3,7 @@ package admin
 import (
 	"html/template"
 	"reflect"
+	"sync"
 
 	"github.com/jinzhu/inflection"
 	"github.com/qor/qor"
@@ -21,8 +22,10 @@ type Admin struct {
 	searchResources  []*Resource
 	auth             Auth
 	router           *Router
-	funcMaps         template.FuncMap
 	metaConfigorMaps map[string]func(*Meta)
+
+	funcMaps      template.FuncMap
+	funcMapsMutex sync.RWMutex
 }
 
 // ResourceNamer is an interface for models that defined method `ResourceName`
@@ -59,7 +62,9 @@ func (admin *Admin) RegisterMetaConfigor(kind string, fc func(*Meta)) {
 
 // RegisterFuncMap register view funcs, it could be used in view templates
 func (admin *Admin) RegisterFuncMap(name string, fc interface{}) {
+	admin.funcMapsMutex.Lock()
 	admin.funcMaps[name] = fc
+	admin.funcMapsMutex.Unlock()
 }
 
 // GetRouter get router from admin

@@ -871,8 +871,11 @@ func (context *Context) FuncMap() template.FuncMap {
 		"load_admin_javascripts": context.loadAdminJavaScripts,
 	}
 
+	context.Admin.funcMapsMutex.RLock()
 	for key, value := range context.Admin.funcMaps {
 		funcMap[key] = value
 	}
+	context.Admin.funcMapsMutex.RUnlock()
+
 	return funcMap
 }
