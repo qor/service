@@ -24,11 +24,38 @@ type Context struct {
 	Action   string
 	Settings map[string]interface{}
 	Result   interface{}
+	Keys     map[string]interface{}
 }
 
 // NewContext new admin context
 func (admin *Admin) NewContext(w http.ResponseWriter, r *http.Request) *Context {
 	return &Context{Context: &qor.Context{Config: admin.Config, Request: r, Writer: w}, Admin: admin, Settings: map[string]interface{}{}}
+}
+
+// Set is used to store a new key/value pair exclusively for this context.
+// It also lazily initializes context.Keys if it was not used previously.
+func (context *Context) Set(key string, value interface{}) {
+	if context.Keys == nil {
+		context.Keys = make(map[string]interface{})
+	}
+	context.Keys[key] = value
+}
+
+// Get returns the value for the given key, ie: (value, true).
+// If the value does not exists it returns (nil, false).
+func (context *Context) Get(key string) (value interface{}, exists bool) {
+	if context.Keys != nil {
+		value, exists = context.Keys[key]
+	}
+	return
+}
+
+// MustGet returns the value for the given key if it exists, otherwise it panics.
+func (context *Context) MustGet(key string) interface{} {
+	if value, exists := context.Get(key); exists {
+		return value
+	}
+	panic("Key \"" + key + "\" does not exist")
 }
 
 func (context *Context) clone() *Context {
