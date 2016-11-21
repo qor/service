@@ -140,6 +140,12 @@ func (admin *Admin) registerResourceToRouter(adminController *controller, res *R
 
 		if mode == "update" {
 			if res.Config.Singleton {
+				// Edit
+				router.Get(path.Join(prefix, "edit"), adminController.Edit, RouteConfig{
+					PermissionMode: roles.Update,
+					Resource:       res,
+				})
+
 				// Update
 				router.Put(prefix, adminController.Update, RouteConfig{
 					PermissionMode: roles.Update,
