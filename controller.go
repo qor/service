@@ -110,7 +110,18 @@ func (ac *controller) Show(context *Context) {
 }
 
 func (ac *controller) Edit(context *Context) {
-	result, err := context.FindOne()
+	var result interface{}
+	var err error
+
+	if context.Resource.Config.Singleton {
+		result = context.Resource.NewStruct()
+		if err = context.Resource.CallFindMany(result, context.Context); err == gorm.ErrRecordNotFound {
+			context.Execute("new", result)
+			return
+		}
+	} else {
+		result, err = context.FindOne()
+	}
 	context.AddError(err)
 
 	responder.With("html", func() {
