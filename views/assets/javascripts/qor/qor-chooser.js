@@ -39,13 +39,13 @@
                 option.ajax = $.fn.select2.ajaxCommonOptions;
 
                 option.templateResult = function(data) {
-                    var tmpl = $this.parents('.qor-field').find('[name="select2-result-template"]');
+                    var tmpl = $this.parents('.qor-field').first().find('[name="select2-result-template"]');
                     return $.fn.select2.ajaxFormatResult(data, tmpl);
                 };
 
                 option.templateSelection = function(data) {
                     if (data.loading) return data.text;
-                    var tmpl = $this.parents('.qor-field').find('[name="select2-selection-template"]');
+                    var tmpl = $this.parents('.qor-field').first().find('[name="select2-selection-template"]');
                     return $.fn.select2.ajaxFormatResult(data, tmpl);
                 };
             }
