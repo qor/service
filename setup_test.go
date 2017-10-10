@@ -1,6 +1,7 @@
 package admin_test
 
 import (
+	"net/http"
 	"net/http/httptest"
 
 	"github.com/jinzhu/gorm"
@@ -15,7 +16,14 @@ var (
 )
 
 func init() {
-	Admin = NewDummyAdmin()
-	db = Admin.Config.DB
-	server = httptest.NewServer(Admin.NewServeMux("/admin"))
+	var mux http.Handler
+	mux, Admin, db = NewTestHandler()
+	server = httptest.NewServer(mux)
+}
+
+func NewTestHandler() (h http.Handler, adm *admin.Admin, d *gorm.DB) {
+	adm = NewDummyAdmin()
+	d = adm.Config.DB
+	h = adm.NewServeMux("/admin")
+	return
 }
