@@ -9,7 +9,7 @@
     </div>
 
     <div class="qor-field__edit qor-field__datetimepicker" data-picker-type="datetime">
-      <input class="mdl-textfield__input qor-datetimepicker__input" placeholder="{{meta_placeholder .Meta .Context " YYYY-MM-DD HH:MM "}}" type="text" id="{{.InputId}}" name="{{.InputName}}" value="{{.Value}}" {{if or (and (eq .Context.Action "edit")  (not (has_update_permission .Meta)))  (and (eq .Context.Action "new") (not (has_create_permission .Meta)))  }} disabled{{end}}>
+      <input class="mdl-textfield__input qor-datetimepicker__input" placeholder="{{meta_placeholder .Meta .Context " YYYY-MM-DD HH:MM "}}" type="text" id="{{.InputId}}" name="{{.InputName}}" value="{{.Value}}" {{if and (not (has_update_permission .Meta)) (not (has_create_permission .Meta)) }} disabled{{end}}>
 
       <div>
         <button data-toggle="qor.datepicker" data-target-input=".qor-datetimepicker__input" class="mdl-button mdl-js-button mdl-button--icon qor-action__datepicker" type="button">

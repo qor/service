@@ -816,7 +816,7 @@ func (context *Context) getFilters() (filters []*Filter) {
 }
 
 func (context *Context) hasCreatePermission(permissioner HasPermissioner) bool {
-	return permissioner.HasPermission(roles.Create, context.Context)
+		return permissioner.HasPermission(roles.Create, context.Context) && (context.Action == "new" || context.Action == "index")
 }
 
 func (context *Context) hasReadPermission(permissioner HasPermissioner) bool {
@@ -824,7 +824,7 @@ func (context *Context) hasReadPermission(permissioner HasPermissioner) bool {
 }
 
 func (context *Context) hasUpdatePermission(permissioner HasPermissioner) bool {
-	return permissioner.HasPermission(roles.Update, context.Context)
+	return permissioner.HasPermission(roles.Update, context.Context) && (context.Action == "edit" || context.Action == "index")
 }
 
 func (context *Context) hasDeletePermission(permissioner HasPermissioner) bool {
