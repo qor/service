@@ -143,6 +143,8 @@ func (context *Context) FuncMap() template.FuncMap {
 		"has_update_permission": context.hasUpdatePermission,
 		"has_delete_permission": context.hasDeletePermission,
 
+		"has_change_permission": context.hasChangePermission,
+
 		"qor_theme_class":        context.themesClass,
 		"javascript_tag":         context.javaScriptTag,
 		"stylesheet_tag":         context.styleSheetTag,
@@ -816,7 +818,7 @@ func (context *Context) getFilters() (filters []*Filter) {
 }
 
 func (context *Context) hasCreatePermission(permissioner HasPermissioner) bool {
-		return permissioner.HasPermission(roles.Create, context.Context) && (context.Action == "new" || context.Action == "index")
+	return permissioner.HasPermission(roles.Create, context.Context)
 }
 
 func (context *Context) hasReadPermission(permissioner HasPermissioner) bool {
@@ -824,11 +826,20 @@ func (context *Context) hasReadPermission(permissioner HasPermissioner) bool {
 }
 
 func (context *Context) hasUpdatePermission(permissioner HasPermissioner) bool {
-	return permissioner.HasPermission(roles.Update, context.Context) && (context.Action == "edit" || context.Action == "index")
+	return permissioner.HasPermission(roles.Update, context.Context)
 }
 
 func (context *Context) hasDeletePermission(permissioner HasPermissioner) bool {
 	return permissioner.HasPermission(roles.Delete, context.Context)
+}
+
+func (context *Context) hasChangePermission(permissioner HasPermissioner) bool {
+	if context.Action == "edit" {
+		return context.hasUpdatePermission(permissioner)
+	} else if context.Action == "new" {
+		return context.hasCreatePermission(permissioner)
+	}
+	return false
 }
 
 // PatchCurrentURL is a convinent wrapper for qor/utils.PatchURL

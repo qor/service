@@ -1,5 +1,5 @@
 {{$value := (raw_value_of .ResourceValue .Meta)}}
-{{if (or (not (is_new_record $value)) (has_create_permission .Meta))}}
+{{if (or (not (is_new_record $value)) (has_change_permission .Meta))}}
   <div class="signle-edit qor-field">
     <label class="qor-field__label" for="{{.InputId}}">
       {{meta_label .Meta}}

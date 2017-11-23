@@ -46,13 +46,13 @@
       <a href="javascript://" {{if $is_existing_record}}style="display:none"{{end}} class="mdl-button mdl-button--colored qor-field__selectone-trigger" data-select-modal="one" {{if .InputId}}data-select-id="#{{.InputId}}"{{end}} data-selectone-url="{{url_for .Meta.Config.RemoteDataResource}}" data-select-listing-url="{{url_for .Meta.Config.RemoteDataResource}}" data-select-creating-url="{{new_resource_path .Meta.Config.RemoteDataResource}}" data-select-default-creating="{{.Meta.Config.DefaultCreating}}" {{if .Meta.Config.PrimaryField}}data-remote-data-primary-key="{{.Meta.Config.PrimaryField}}"{{end}}>{{meta_placeholder .Meta .Context "Click to Select"}}</a>
 
       <select id="{{.InputId}}" class="qor-field__input qor-field__selectone-input hidden" name="{{.InputName}}"
-      {{if and (not (has_update_permission .Meta)) (not (has_create_permission .Meta)) }}disabled{{end}}>
+      {{if  (not (has_change_permission .Meta)) }}disabled{{end}}>
         {{if $is_existing_record}}
           <option value="{{primary_key_of $current_value}}" selected>{{.Value}}</option>
         {{end}}
       </select>
     {{else}}
-      <select id="{{.InputId}}" class="qor-field__input hidden" {{if .Meta.Config.RemoteDataResource}}{{if $is_existing_record}}chooser-selected="true"{{end}}{{end}} data-toggle="qor.chooser" data-placeholder="{{meta_placeholder .Meta .Context "Select an Option"}}" name="{{.InputName}}" {{if and (not (has_update_permission .Meta)) (not (has_create_permission .Meta)) }}disabled{{end}} {{if .Meta.Config.AllowBlank}}data-allow-clear="true"{{end}} {{if .Meta.Config.RemoteDataResource}}data-ajax--url="{{url_for .Meta.Config.RemoteDataResource}}" data-remote-data="true" {{if .Meta.Config.PrimaryField}}data-remote-data-primary-key="{{.Meta.Config.PrimaryField}}"{{end}}{{end}}>
+      <select id="{{.InputId}}" class="qor-field__input hidden" {{if .Meta.Config.RemoteDataResource}}{{if $is_existing_record}}chooser-selected="true"{{end}}{{end}} data-toggle="qor.chooser" data-placeholder="{{meta_placeholder .Meta .Context "Select an Option"}}" name="{{.InputName}}" {{if  (not (has_change_permission .Meta)) }}disabled{{end}} {{if .Meta.Config.AllowBlank}}data-allow-clear="true"{{end}} {{if .Meta.Config.RemoteDataResource}}data-ajax--url="{{url_for .Meta.Config.RemoteDataResource}}" data-remote-data="true" {{if .Meta.Config.PrimaryField}}data-remote-data-primary-key="{{.Meta.Config.PrimaryField}}"{{end}}{{end}}>
         {{if .Meta.Config.RemoteDataResource}}
           {{if $is_existing_record}}
             <option value="{{primary_key_of $current_value}}" selected>{{.Value}}</option>

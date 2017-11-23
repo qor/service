@@ -10,7 +10,7 @@
 
     <div class="qor-field__edit">
       <input class="mdl-textfield__input" type="number" step="any" id="{{.InputId}}" name="{{.InputName}}" value="{{.Value}}"
-      {{if and (not (has_update_permission .Meta)) (not (has_create_permission .Meta)) }}disabled{{end}}>
+      {{if  (not (has_change_permission .Meta)) }}disabled{{end}}>
     </div>
   </div>
 </div>

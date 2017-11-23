@@ -4,7 +4,7 @@
 
     <span class="qor-field__edit">
       <input type="checkbox" {{if .InputId}}id="{{.InputId}}"{{end}} name="{{.InputName}}" class="mdl-checkbox__input" value="true" type="checkbox" {{if .Value}}checked{{end}}
-      {{if and  (not (has_update_permission .Meta)) (not (has_create_permission .Meta))  }} disabled{{end}}>
+      {{if (not (has_change_permission .Meta))  }} disabled{{end}}>
       <input type="hidden" name="{{.InputName}}" value="false">
     </span>
   </label>

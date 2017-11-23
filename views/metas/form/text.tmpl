@@ -8,7 +8,7 @@
 
     <div class="qor-field__edit">
       <textarea class="mdl-textfield__input qor-js-autoheight" id="{{.InputId}}" name="{{.InputName}}" rows="1"
-      {{if and (not (has_update_permission .Meta)) (not (has_create_permission .Meta)) }}disabled{{end}}>{{.Value}}</textarea>
+      {{if  (not (has_change_permission .Meta)) }}disabled{{end}}>{{.Value}}</textarea>
     </div>
   </div>
 </div>
