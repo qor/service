@@ -22,7 +22,7 @@
                   data-crop-url="{{$asset_router}}/crop"
                   data-text="{&quot;title&quot;: &quot;{{t "qor_admin.form.crop_image" "Crop image"}}&quot;, &quot;ok&quot;: &quot;{{t "qor_admin.form.ok" "OK"}}&quot;, &quot;cancel&quot;: &quot;{{t "qor_admin.form.cancel" "Cancel"}}&quot;}"
                 {{end}}
-                {{if not (has_update_permission .Meta)}}disabled{{end}}>
+                {{if or (and (eq .Context.Action "edit")  (not (has_update_permission .Meta)))  (and (eq .Context.Action "new") (not (has_create_permission .Meta)))  }}disabled{{end}}>
             {{.Value}}
       </textarea>
   </div>

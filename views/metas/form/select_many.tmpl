@@ -50,7 +50,7 @@
     </script>
   {{end}}
 
-  <div class="qor-field__edit qor-field__block qor-field__selectmany" {{if (eq .Meta.Config.SelectMode "bottom_sheet")}}data-toggle="qor.selectmany"{{end}} {{if not (has_update_permission .Meta)}}data-disabled="disabled"{{end}}>
+  <div class="qor-field__edit qor-field__block qor-field__selectmany" {{if (eq .Meta.Config.SelectMode "bottom_sheet")}}data-toggle="qor.selectmany"{{end}} {{if or (and (eq .Context.Action "edit")  (not (has_update_permission .Meta)))  (and (eq .Context.Action "new") (not (has_create_permission .Meta)))  }}data-disabled="disabled"{{end}}>
     {{if (eq .Meta.Config.SelectMode "bottom_sheet")}}
       <ul class="qor-field__selected-many">
         {{range $value := $current_values}}
@@ -66,13 +66,13 @@
         {{t "qor_admin.form.add_items" "ADD ITEMS"}}
       </a>
 
-      <select class="qor-field__input qor-field__selectmany-input hidden" id="{{.InputId}}" name="{{.InputName}}" multiple {{if not (has_update_permission .Meta)}}disabled{{end}}>
+      <select class="qor-field__input qor-field__selectmany-input hidden" id="{{.InputId}}" name="{{.InputName}}" multiple {{if or (and (eq .Context.Action "edit")  (not (has_update_permission .Meta)))  (and (eq .Context.Action "new") (not (has_create_permission .Meta)))  }}disabled{{end}}>
         {{range $value := $current_values}}
           <option value="{{primary_key_of $value}}" selected>{{stringify $value}}</option>
         {{end}}
       </select>
     {{else}}
-      <select class="qor-field__input hidden" id="{{.InputId}}" {{if not (eq .Meta.Config.SelectMode "bottom_sheet")}} data-toggle="qor.chooser" {{end}} data-placeholder="{{meta_placeholder .Meta .Context "Select some Options"}}" name="{{.InputName}}" multiple {{if not (has_update_permission .Meta)}}disabled{{end}} {{if .Meta.Config.RemoteDataResource}}data-remote-data="true" data-ajax--url="{{url_for .Meta.Config.RemoteDataResource}}" {{if .Meta.Config.PrimaryField}}data-remote-data-primary-key="{{.Meta.Config.PrimaryField}}"{{end}}{{end}}>
+      <select class="qor-field__input hidden" id="{{.InputId}}" {{if not (eq .Meta.Config.SelectMode "bottom_sheet")}} data-toggle="qor.chooser" {{end}} data-placeholder="{{meta_placeholder .Meta .Context "Select some Options"}}" name="{{.InputName}}" multiple {{if or (and (eq .Context.Action "edit")  (not (has_update_permission .Meta)))  (and (eq .Context.Action "new") (not (has_create_permission .Meta)))  }}disabled{{end}} {{if .Meta.Config.RemoteDataResource}}data-remote-data="true" data-ajax--url="{{url_for .Meta.Config.RemoteDataResource}}" {{if .Meta.Config.PrimaryField}}data-remote-data-primary-key="{{.Meta.Config.PrimaryField}}"{{end}}{{end}}>
         {{if .Meta.Config.RemoteDataResource}}
           {{range $value := $current_values}}
             <option value="{{primary_key_of $value}}" selected>{{stringify $value}}</option>

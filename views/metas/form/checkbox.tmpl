@@ -3,7 +3,8 @@
     <span class="qor-field__label mdl-checkbox__label">{{meta_label .Meta}}</span>
 
     <span class="qor-field__edit">
-      <input type="checkbox" {{if .InputId}}id="{{.InputId}}"{{end}} name="{{.InputName}}" class="mdl-checkbox__input" value="true" type="checkbox" {{if .Value}}checked{{end}}{{if (or (eq .Context.Action "show") (not (has_update_permission .Meta)))}} disabled{{end}}>
+      <input type="checkbox" {{if .InputId}}id="{{.InputId}}"{{end}} name="{{.InputName}}" class="mdl-checkbox__input" value="true" type="checkbox" {{if .Value}}checked{{end}}
+      {{if or (and (eq .Context.Action "edit")  (not (has_update_permission .Meta)))  (and (eq .Context.Action "new") (not (has_create_permission .Meta)))  }} disabled{{end}}>
       <input type="hidden" name="{{.InputName}}" value="false">
     </span>
   </label>
