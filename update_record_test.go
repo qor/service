@@ -10,9 +10,12 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"testing"
 
 	. "github.com/qor/admin/tests/dummy"
+	"github.com/qor/qor"
+	"github.com/qor/qor/resource"
 )
 
 func TestUpdateRecord(t *testing.T) {
@@ -31,6 +34,47 @@ func TestUpdateRecord(t *testing.T) {
 
 		if db.First(&User{}, "name = ?", user.Name+"_new").RecordNotFound() {
 			t.Errorf("User should be updated successfully")
+		}
+	} else {
+		t.Errorf(err.Error())
+	}
+}
+
+func TestUpdateRecordWithRollback(t *testing.T) {
+	db.Exec("TRUNCATE TABLE users")
+	db.Model(&User{}).AddUniqueIndex("uix_user_name", "name")
+	userR := Admin.GetResource("User")
+	userR.AddProcessor(&resource.Processor{
+		Name: "product-admin-prroduct-res-processor",
+		Handler: func(v interface{}, meta *resource.MetaValues, c *qor.Context) error {
+			user := v.(*User)
+			c.DB.Model(user).Association("Languages").Replace([]Language{{Name: "CN"}})
+			return nil
+		},
+	})
+
+	db.Save(&User{Name: "Katin", Role: "admin"})
+
+	user := User{Name: "update_record", Role: "admin", Languages: []Language{{Name: "CN"}, {Name: "JP"}}}
+	db.Save(&user)
+
+	form := url.Values{
+		"QorResource.Name": {"Katin"},
+		"QorResource.Role": {"admin"},
+	}
+
+	if req, err := http.PostForm(server.URL+"/admin/users/"+fmt.Sprint(user.ID), form); err == nil {
+		if req.StatusCode == 200 {
+			t.Errorf("Should update user failure when name already be token by other user.")
+		}
+		u := User{}
+		db.Where("name = 'update_record'").Preload("Languages").First(&u)
+		languages := []string{}
+		for _, language := range u.Languages {
+			languages = append(languages, language.Name)
+		}
+		if strings.Join(languages, ",") != "CN,JP" {
+			t.Errorf("Should keep origin value for languages, but got %v", strings.Join(languages, ","))
 		}
 	} else {
 		t.Errorf(err.Error())

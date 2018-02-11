@@ -164,9 +164,18 @@ func (ac *Controller) Update(context *Context) {
 
 	res := context.Resource
 	if !context.HasError() {
+		originalDB := context.DB
+		tx := context.DB.Begin()
+		context.SetDB(tx)
 		if context.AddError(res.Decode(context.Context, result)); !context.HasError() {
 			context.AddError(res.CallSave(result, context.Context))
 		}
+		if context.HasError() {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+		context.SetDB(originalDB)
 	}
 
 	if context.HasError() {
