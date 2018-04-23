@@ -24,7 +24,6 @@ func (datetimeConfig *DatetimeConfig) ConfigureQorMeta(metaor resource.Metaor) {
 		if meta.Type == "datetime" {
 			datetimeConfig.ShowTime = true
 		}
-		meta.Type = "datetime"
 
 		if datetimeConfig.ShowTime {
 			timeFormat = "2006-01-02 15:04"
