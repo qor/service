@@ -48,7 +48,7 @@ func main() {
   DB.AutoMigrate(&User{}, &Product{})
 
   // Initalize
-  Admin := admin.New(&admin.AdminConfig{DB: DB})
+  Admin := admin.New(&qor.Config{DB: DB})
 
   // Allow to use Admin to manage User, Product
   Admin.AddResource(&User{})
