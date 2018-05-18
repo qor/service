@@ -730,12 +730,14 @@ func (res *Resource) configure() {
 
 	configureModel = func(value interface{}) {
 		modelType := utils.ModelType(value)
-		for i := 0; i < modelType.NumField(); i++ {
-			if fieldStruct := modelType.Field(i); fieldStruct.Anonymous {
-				if injector, ok := reflect.New(fieldStruct.Type).Interface().(resource.ConfigureResourceInterface); ok {
-					injector.ConfigureQorResource(res)
-				} else {
-					configureModel(reflect.New(fieldStruct.Type).Interface())
+		if modelType.Kind() == reflect.Struct {
+			for i := 0; i < modelType.NumField(); i++ {
+				if fieldStruct := modelType.Field(i); fieldStruct.Anonymous {
+					if injector, ok := reflect.New(fieldStruct.Type).Interface().(resource.ConfigureResourceInterface); ok {
+						injector.ConfigureQorResource(res)
+					} else {
+						configureModel(reflect.New(fieldStruct.Type).Interface())
+					}
 				}
 			}
 		}
