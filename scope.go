@@ -19,6 +19,6 @@ type Scope struct {
 	Label   string
 	Group   string
 	Visible func(name string, context *Context) bool
-	Handler func(*gorm.DB, *qor.Context) *gorm.DB
+	Handler func(string, *gorm.DB, *qor.Context) *gorm.DB
 	Default bool
 }
