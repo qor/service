@@ -217,6 +217,10 @@
                 $loading = $(QOR.$formLoading),
                 $submit = $form.find(':submit');
 
+            if ($form.data('normal-submit')) {
+                return;
+            }
+
             $slideout.trigger(EVENT_SLIDEOUT_BEFORESEND);
 
             if (!FormData) {

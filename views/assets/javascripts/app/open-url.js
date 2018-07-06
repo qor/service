@@ -56,6 +56,12 @@ $(function() {
             isActionButton = $this.hasClass('qor-action-button') || $this.hasClass('qor-action--button');
 
         e.stopPropagation();
+
+        if (openType == 'window') {
+            window.location.href = openData.url;
+            return;
+        }
+
         // if clicking item's menu actions
         if (
             $this.data('ajax-form') ||
@@ -107,7 +113,7 @@ $(function() {
                         return false;
                     }
                 } else {
-                    window.location = openData.url;
+                    window.location.href = openData.url;
                     return false;
                 }
             }
