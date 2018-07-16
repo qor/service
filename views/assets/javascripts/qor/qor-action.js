@@ -228,9 +228,12 @@
                 isUndo = $actionButton.hasClass(CLASS_IS_UNDO),
                 isInSlideout = $actionButton.closest(CLASS_SLIDEOUT).length,
                 needDisableButtons = $element.length && !isInSlideout;
-
             if (isUndo) {
                 url = undoUrl; // notification has undo url
+            }
+            if (isInSlideout==0){
+                isInSlideout = $element.length;
+                needDisableButtons = $element.length && !isInSlideout;
             }
 
             $.ajax(url, {
