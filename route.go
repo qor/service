@@ -33,7 +33,6 @@ type Middleware struct {
 	next    *Middleware
 }
 
-
 type AdminResponseWriter struct {
 	http.ResponseWriter
 	statusCode int
@@ -198,7 +197,6 @@ func (admin *Admin) NewServeMux(prefix string) http.Handler {
 	return &serveMux{admin: admin}
 }
 
-
 type serveMux struct {
 	admin *Admin
 }
@@ -233,25 +231,17 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	defer func() func() {
 		begin := time.Now()
 		return func() {
-<<<<<<< HEAD
-			ip:=""
+			ip := ""
 			addrs, _ := net.InterfaceAddrs()
 			for _, a := range addrs {
 				if ips, ok := a.(*net.IPNet); ok && !ips.IP.IsLoopback() {
-					if ips.IP.To4()!=nil{
-						ip=ips.IP.String()
+					if ips.IP.To4() != nil {
+						ip = ips.IP.String()
 					}
 				}
 			}
-			code := context.Writer.(*loggingResponseWriter).statusCode
+			code := context.Writer.(*AdminResponseWriter).statusCode
 			log.Printf("ip=%v, user=%v, date=[%v], path=%v, method=%v, status=%v, duration=%v params={%v}", ip, context.CurrentUser.GetId(), time.Now().Format("2006-01-02 15:03:04"), req.RequestURI, req.Method, code, time.Now().Sub(begin).Seconds()*1000, params)
-=======
-
-			(req.env["HTTP_X_FORWARDED_FOR"] || req.env["REMOTE_ADDR"]).split(",").map(&:strip).select { |ip| ip !~ /^10\./ && ip !~ /^172\.1[6-9]\./ && ip !~ /^172\.2[0-9]\./ && ip !~ /^172\.3[0-1]\./ && ip !~ /^192\.168\./ }[0] rescue ""
-			code :=context.Writer.(*AdminResponseWriter).statusCode
-			log.Printf("ip=%v, user=%v, date=[%v], path=%v, method=%v, status=%v, duration=%v params={%v}", req.RemoteAddr, context.CurrentUser.GetId(), time.Now().Format("2006-01-02 15:03:04"), req.RequestURI, req.Method, code, time.Now().Sub(begin).Seconds()*1000, params)
-			//log.Printf("Finish [%s] %s Took %.2fms\n", req.Method, req.RequestURI, time.Now().Sub(begin).Seconds()*1000)
->>>>>>> d7f626e1cec7c449d7b0af926f2e80985e166fe4
 		}
 	}()()
 
