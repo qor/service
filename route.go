@@ -2,6 +2,7 @@ package admin
 
 import (
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"path"
@@ -10,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"fmt"
 	"github.com/qor/qor"
 	"github.com/qor/qor/utils"
 	"github.com/qor/roles"
@@ -29,6 +31,19 @@ type Middleware struct {
 	Name    string
 	Handler func(*Context, *Middleware)
 	next    *Middleware
+}
+
+type loggingResponseWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func NewLoggingResponseWrite(w http.ResponseWriter) *loggingResponseWriter {
+	return &loggingResponseWriter{w, http.StatusOK}
+}
+func (lrw *loggingResponseWriter) WriteHeader(code int) {
+	lrw.statusCode = code
+	lrw.ResponseWriter.WriteHeader(code)
 }
 
 // Next will call the next middleware
@@ -162,7 +177,6 @@ func (admin *Admin) NewServeMux(prefix string) http.Handler {
 					return
 				}
 			}
-
 			middleware.Next(context)
 		},
 	})
@@ -179,7 +193,6 @@ func (admin *Admin) NewServeMux(prefix string) http.Handler {
 			http.NotFound(context.Writer, context.Request)
 		},
 	})
-
 	return &serveMux{admin: admin}
 }
 
@@ -193,6 +206,7 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		admin        = serveMux.admin
 		RelativePath = "/" + strings.Trim(strings.TrimPrefix(req.URL.Path, admin.router.Prefix), "/")
 		context      = admin.NewContext(w, req)
+		params       string
 	)
 
 	// Parse Request Form
@@ -216,7 +230,17 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	defer func() func() {
 		begin := time.Now()
 		return func() {
-			log.Printf("Finish [%s] %s Took %.2fms\n", req.Method, req.RequestURI, time.Now().Sub(begin).Seconds()*1000)
+			ip:=""
+			addrs, _ := net.InterfaceAddrs()
+			for _, a := range addrs {
+				if ips, ok := a.(*net.IPNet); ok && !ips.IP.IsLoopback() {
+					if ips.IP.To4()!=nil{
+						ip=ips.IP.String()
+					}
+				}
+			}
+			code := context.Writer.(*loggingResponseWriter).statusCode
+			log.Printf("ip=%v, user=%v, date=[%v], path=%v, method=%v, status=%v, duration=%v params={%v}", ip, context.CurrentUser.GetId(), time.Now().Format("2006-01-02 15:03:04"), req.RequestURI, req.Method, code, time.Now().Sub(begin).Seconds()*1000, params)
 		}
 	}()()
 
@@ -236,12 +260,16 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "GET":
 		permissionMode = roles.Read
+		params = getParameters(req)
 	case "PUT":
 		permissionMode = roles.Update
+		params = getParameters(req)
 	case "POST":
 		permissionMode = roles.Create
+		params = getParameters(req)
 	case "DELETE":
 		permissionMode = roles.Delete
+		params = getParameters(req)
 	}
 
 	handlers := admin.router.routers[strings.ToUpper(req.Method)]
@@ -261,6 +289,8 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			break
 		}
 	}
+
+	context.Writer = NewLoggingResponseWrite(context.Writer)
 
 	// Call first middleware
 	for _, middleware := range admin.router.middlewares {
@@ -361,4 +391,22 @@ func (res *Resource) RegisterRoute(method string, relativePath string, handler r
 	case "DELETE":
 		router.Delete(path.Join(prefix, relativePath), handler, config)
 	}
+}
+
+// get body parameters
+func getParameters(req *http.Request) (params string) {
+	values, _ := url.ParseQuery(req.URL.RawQuery)
+	if values != nil {
+		for key, value := range values {
+			params += fmt.Sprintf(`,"%s":"%s"`, key, value)
+		}
+	}
+	if req.PostForm != nil {
+		for key, value := range req.PostForm {
+			r := regexp.MustCompile(`QorResource.`)
+			b := r.ReplaceAllLiteralString(key, "")
+			params += fmt.Sprintf(`,"%s":"%s"`, b, value)
+		}
+	}
+	return
 }
