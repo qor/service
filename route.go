@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"fmt"
+
 	"github.com/qor/qor"
 	"github.com/qor/qor/utils"
 	"github.com/qor/roles"
@@ -404,9 +405,7 @@ func getParameters(req *http.Request) (params string) {
 	}
 	if req.PostForm != nil {
 		for key, value := range req.PostForm {
-			r := regexp.MustCompile(`QorResource.`)
-			b := r.ReplaceAllLiteralString(key, "")
-			params += fmt.Sprintf(`,"%s":"%s"`, b, value)
+			params += fmt.Sprintf(`,"%s":"%s"`, key, value)
 		}
 	}
 	return
