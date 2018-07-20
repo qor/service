@@ -15,6 +15,7 @@ import (
 	"github.com/qor/qor"
 	"github.com/qor/qor/utils"
 	"github.com/qor/roles"
+	"net"
 )
 
 // Middleware is a way to filter a request and response coming into your application
@@ -210,6 +211,7 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		params       string
 	)
 
+
 	// Parse Request Form
 	req.ParseMultipartForm(2 * 1024 * 1024)
 	defer func() {
@@ -236,13 +238,25 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			if len(ips) == 0 {
 				ips = strings.Split(req.Header.Get("REMOTE_ADDR"), ",")
 			}
-			for _, ip := range ips {
-				r := regexp.MustCompile(`10\.|172\.1[6-9]\.|172\.3[0-1]\.|192\.168\.|172\.2[0-9]\.`)
-				if r.Match([]byte(ip)) {
-					continue
+			if len(ips)==1{
+				addrs, _ := net.InterfaceAddrs()
+				for _, address := range addrs {
+					if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+						if ipnet.IP.To4() != nil {
+							realIP=ipnet.IP.String()
+						}
+
+					}
 				}
-				realIP = ip
-				break
+			}else{
+				for _, ip := range ips {
+					r := regexp.MustCompile(`10\.|172\.1[6-9]\.|172\.3[0-1]\.|192\.168\.|172\.2[0-9]\.`)
+					if r.Match([]byte(ip)) {
+						continue
+					}
+					realIP = ip
+					break
+				}
 			}
 			code := context.Writer.(*AdminResponseWriter).statusCode
 			log.SetFlags(0)
