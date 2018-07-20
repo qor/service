@@ -1,8 +1,8 @@
 package admin
 
 import (
-	"net"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"path"
@@ -232,18 +232,26 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	defer func() func() {
 		begin := time.Now()
 		return func() {
-			ip := ""
-			addrs, _ := net.InterfaceAddrs()
-			for _, a := range addrs {
-				if ips, ok := a.(*net.IPNet); ok && !ips.IP.IsLoopback() {
-					if ips.IP.To4() != nil {
-						ip = ips.IP.String()
+			ip := req.Header.Get("HTTP_X_FORWARDED_FOR")
+			if ip == "" {
+				addrs, _ := net.InterfaceAddrs()
+				for _, a := range addrs {
+					if ips, ok := a.(*net.IPNet); ok && !ips.IP.IsLoopback() {
+						if ips.IP.To4() != nil {
+							ip = ips.IP.String()
+						}
 					}
 				}
+			} else {
+				ipSlice := strings.Split(ip, ",")
+				if ipSlice[0] == "" {
+					ip = ipSlice[0]
+				}
 			}
+			//(req.env["HTTP_X_FORWARDED_FOR"] || req.env["REMOTE_ADDR"]).split(",").map(&:strip).select { |ip| ip !~ /^10\./ && ip !~ /^172\.1[6-9]\./ && ip !~ /^172\.2[0-9]\./ && ip !~ /^172\.3[0-1]\./ && ip !~ /^192\.168\./ }[0] rescue ""
 			code := context.Writer.(*AdminResponseWriter).statusCode
 			log.SetFlags(0)
-			log.Printf("ip=%v user=%v date=%v path=%v method=%v status=%v duration=%v params={%v}", ip, context.CurrentUser.GetId(), time.Now().Format("2006-01-02 15:03:04"), req.RequestURI, req.Method, code, time.Now().Sub(begin).Seconds()*1000, params)
+			log.Printf("ip=%v user=%v date=%v path=%v method=%v status=%v duration=%v params={%v}", ip, context.CurrentUser.GetId(), time.Now().Format("2006-01-02 15:03:04"), req.URL.Path, req.Method, code, time.Now().Sub(begin).Seconds()*1000, params)
 		}
 	}()()
 
@@ -401,12 +409,12 @@ func getParameters(req *http.Request) (params string) {
 	values, _ := url.ParseQuery(req.URL.RawQuery)
 	if values != nil {
 		for key, value := range values {
-			params += fmt.Sprintf(`,"%s":"%s"`, key, value)
+			params += fmt.Sprintf(`"%s":"%s"`, key, value)
 		}
 	}
 	if req.PostForm != nil {
 		for key, value := range req.PostForm {
-			params += fmt.Sprintf(`,"%s":"%s"`, key, value)
+			params += fmt.Sprintf(`"%s":"%s"`, key, value)
 		}
 	}
 	return
