@@ -2,6 +2,7 @@ package admin
 
 import (
 	"net"
+	"log"
 	"net/http"
 	"net/url"
 	"path"
@@ -241,7 +242,8 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 				}
 			}
 			code := context.Writer.(*AdminResponseWriter).statusCode
-			fmt.Printf("ip=%v user=%v date=%v path=%v method=%v status=%v duration=%v params={%v}", ip, context.CurrentUser.GetId(), time.Now().Format("2006-01-02 15:03:04"), req.RequestURI, req.Method, code, time.Now().Sub(begin).Seconds()*1000, params)
+			log.SetFlags(0)
+			log.Printf("ip=%v user=%v date=%v path=%v method=%v status=%v duration=%v params={%v}", ip, context.CurrentUser.GetId(), time.Now().Format("2006-01-02 15:03:04"), req.RequestURI, req.Method, code, time.Now().Sub(begin).Seconds()*1000, params)
 		}
 	}()()
 
