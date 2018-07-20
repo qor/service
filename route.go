@@ -1,7 +1,6 @@
 package admin
 
 import (
-	"net"
 	"log"
 	"net/http"
 	"net/url"
@@ -232,18 +231,22 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	defer func() func() {
 		begin := time.Now()
 		return func() {
-			ip := ""
-			addrs, _ := net.InterfaceAddrs()
-			for _, a := range addrs {
-				if ips, ok := a.(*net.IPNet); ok && !ips.IP.IsLoopback() {
-					if ips.IP.To4() != nil {
-						ip = ips.IP.String()
-					}
+			realIP := ""
+			ips := strings.Split(req.Header.Get("HTTP_X_FORWARDED_FOR"), ",")
+			if len(ips) == 0 {
+				ips = strings.Split(req.Header.Get("REMOTE_ADDR"), ",")
+			}
+			for _, ip := range ips {
+				r := regexp.MustCompile(`10\.|172\.1[6-9]\.|172\.3[0-1]\.|192\.168\.|172\.2[0-9]\.`)
+				if r.Match([]byte(ip)) {
+					continue
 				}
+				realIP = ip
+				break
 			}
 			code := context.Writer.(*AdminResponseWriter).statusCode
 			log.SetFlags(0)
-			log.Printf("ip=%v user=%v date=%v path=%v method=%v status=%v duration=%v params={%v}", ip, context.CurrentUser.GetId(), time.Now().Format("2006-01-02 15:03:04"), req.RequestURI, req.Method, code, time.Now().Sub(begin).Seconds()*1000, params)
+			log.Printf("ip=%v user=%v date=%v path=%v method=%v status=%v duration=%v params={%v}", realIP, context.CurrentUser.GetId(), time.Now().Format("2006-01-02 15:03:04"), req.URL.Path, req.Method, code, time.Now().Sub(begin).Seconds()*1000, params)
 		}
 	}()()
 
@@ -401,12 +404,12 @@ func getParameters(req *http.Request) (params string) {
 	values, _ := url.ParseQuery(req.URL.RawQuery)
 	if values != nil {
 		for key, value := range values {
-			params += fmt.Sprintf(`,"%s":"%s"`, key, value)
+			params += fmt.Sprintf(`"%s":"%s"`, key, value)
 		}
 	}
 	if req.PostForm != nil {
 		for key, value := range req.PostForm {
-			params += fmt.Sprintf(`,"%s":"%s"`, key, value)
+			params += fmt.Sprintf(`"%s":"%s"`, key, value)
 		}
 	}
 	return
