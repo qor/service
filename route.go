@@ -2,7 +2,6 @@ package admin
 
 import (
 	"log"
-	"net"
 	"net/http"
 	"net/url"
 	"path"
@@ -232,26 +231,22 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	defer func() func() {
 		begin := time.Now()
 		return func() {
-			ip := req.Header.Get("HTTP_X_FORWARDED_FOR")
-			if ip == "" {
-				addrs, _ := net.InterfaceAddrs()
-				for _, a := range addrs {
-					if ips, ok := a.(*net.IPNet); ok && !ips.IP.IsLoopback() {
-						if ips.IP.To4() != nil {
-							ip = ips.IP.String()
-						}
-					}
-				}
-			} else {
-				ipSlice := strings.Split(ip, ",")
-				if ipSlice[0] == "" {
-					ip = ipSlice[0]
-				}
+			realIP := ""
+			ips := strings.Split(req.Header.Get("HTTP_X_FORWARDED_FOR"), ",")
+			if len(ips) == 0 {
+				ips = strings.Split(req.Header.Get("REMOTE_ADDR"), ",")
 			}
-			//(req.env["HTTP_X_FORWARDED_FOR"] || req.env["REMOTE_ADDR"]).split(",").map(&:strip).select { |ip| ip !~ /^10\./ && ip !~ /^172\.1[6-9]\./ && ip !~ /^172\.2[0-9]\./ && ip !~ /^172\.3[0-1]\./ && ip !~ /^192\.168\./ }[0] rescue ""
+			for _, ip := range ips {
+				r := regexp.MustCompile(`10\.|172\.1[6-9]\.|172\.3[0-1]\.|192\.168\.|172\.2[0-9]\.`)
+				if r.Match([]byte(ip)) {
+					continue
+				}
+				realIP = ip
+				break
+			}
 			code := context.Writer.(*AdminResponseWriter).statusCode
 			log.SetFlags(0)
-			log.Printf("ip=%v user=%v date=%v path=%v method=%v status=%v duration=%v params={%v}", ip, context.CurrentUser.GetId(), time.Now().Format("2006-01-02 15:03:04"), req.URL.Path, req.Method, code, time.Now().Sub(begin).Seconds()*1000, params)
+			log.Printf("ip=%v user=%v date=%v path=%v method=%v status=%v duration=%v params={%v}", realIP, context.CurrentUser.GetId(), time.Now().Format("2006-01-02 15:03:04"), req.URL.Path, req.Method, code, time.Now().Sub(begin).Seconds()*1000, params)
 		}
 	}()()
 
