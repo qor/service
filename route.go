@@ -234,12 +234,15 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		begin := time.Now()
 		return func() {
 			realIP := ""
+			log.Printf("%v",req,"Request Real IP")
 			ips := strings.Split(req.Header.Get("HTTP_X_FORWARDED_FOR"), ",")
 			if len(ips) == 0 {
 				ips = strings.Split(req.Header.Get("REMOTE_ADDR"), ",")
 			}
+			log.Printf("headers ips:%v",ips)
 			if len(ips)==1{
 				addrs, _ := net.InterfaceAddrs()
+				log.Printf("net interfaceAddrs:%v",addrs)
 				for _, address := range addrs {
 					if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 						if ipnet.IP.To4() != nil {
@@ -260,7 +263,11 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			}
 			code := context.Writer.(*AdminResponseWriter).statusCode
 			log.SetFlags(0)
-			log.Printf("ip=%v user=%v date=%v path=%v method=%v status=%v duration=%v params={%v}", realIP, context.CurrentUser.GetId(), time.Now().Format("2006-01-02 15:03:04"), req.URL.Path, req.Method, code, time.Now().Sub(begin).Seconds()*1000, params)
+			userID:=context.CurrentUser.GetId()
+			if userID==""{
+				userID=""
+			}
+			log.Printf("ip=%v user=%v date=%v path=%v method=%v status=%v duration=%v params={%v}", realIP, userID, time.Now().Format("2006-01-02 15:03:04"), req.URL.Path, req.Method, code, time.Now().Sub(begin).Seconds()*1000, params)
 		}
 	}()()
 
