@@ -234,6 +234,7 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return func() {
 			params := ""
 			realIP := ""
+			log.Printf("Request: %s",req)
 			ips := strings.Split(req.Header.Get("HTTP_X_FORWARDED_FOR"), ",")
 			if len(ips) == 0 {
 				ips = strings.Split(req.Header.Get("REMOTE_ADDR"), ",")
