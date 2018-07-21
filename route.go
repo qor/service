@@ -12,8 +12,6 @@ import (
 
 	"fmt"
 
-	"net"
-
 	"github.com/qor/qor"
 	"github.com/qor/qor/utils"
 	"github.com/qor/roles"
@@ -234,35 +232,22 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return func() {
 			params := ""
 			realIP := ""
-			log.Printf("Request: %s",req)
-			ips := strings.Split(req.Header.Get("HTTP_X_FORWARDED_FOR"), ",")
+			userID := ""
+			ips := strings.Split(req.Header.Get("X-Forwarded-For"), ",")
 			if len(ips) == 0 {
 				ips = strings.Split(req.Header.Get("REMOTE_ADDR"), ",")
 			}
-			if len(ips) == 1 {
-				addrs, _ := net.InterfaceAddrs()
-				for _, address := range addrs {
-					if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-						if ipnet.IP.To4() != nil {
-							realIP = ipnet.IP.String()
-						}
-
-					}
+			for _, ip := range ips {
+				r := regexp.MustCompile(`10\.|172\.1[6-9]\.|172\.3[0-1]\.|192\.168\.|172\.2[0-9]\.`)
+				if r.Match([]byte(ip)) {
+					continue
 				}
-			} else {
-				for _, ip := range ips {
-					r := regexp.MustCompile(`10\.|172\.1[6-9]\.|172\.3[0-1]\.|192\.168\.|172\.2[0-9]\.`)
-					if r.Match([]byte(ip)) {
-						continue
-					}
-					realIP = ip
-					break
-				}
+				realIP = ip
+				break
 			}
 			code := context.Writer.(*AdminResponseWriter).statusCode
 			log.SetFlags(0)
 			params = getParameters(req)
-			userID := ""
 			if context.CurrentUser != nil {
 				userID = context.CurrentUser.GetId()
 			}
