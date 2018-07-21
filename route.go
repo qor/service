@@ -12,10 +12,11 @@ import (
 
 	"fmt"
 
+	"net"
+
 	"github.com/qor/qor"
 	"github.com/qor/qor/utils"
 	"github.com/qor/roles"
-	"net"
 )
 
 // Middleware is a way to filter a request and response coming into your application
@@ -208,9 +209,7 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		admin        = serveMux.admin
 		RelativePath = "/" + strings.Trim(strings.TrimPrefix(req.URL.Path, admin.router.Prefix), "/")
 		context      = admin.NewContext(w, req)
-		params       string
 	)
-
 
 	// Parse Request Form
 	req.ParseMultipartForm(2 * 1024 * 1024)
@@ -233,22 +232,23 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	defer func() func() {
 		begin := time.Now()
 		return func() {
+			params := ""
 			realIP := ""
 			ips := strings.Split(req.Header.Get("HTTP_X_FORWARDED_FOR"), ",")
 			if len(ips) == 0 {
 				ips = strings.Split(req.Header.Get("REMOTE_ADDR"), ",")
 			}
-			if len(ips)==1{
+			if len(ips) == 1 {
 				addrs, _ := net.InterfaceAddrs()
 				for _, address := range addrs {
 					if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 						if ipnet.IP.To4() != nil {
-							realIP=ipnet.IP.String()
+							realIP = ipnet.IP.String()
 						}
 
 					}
 				}
-			}else{
+			} else {
 				for _, ip := range ips {
 					r := regexp.MustCompile(`10\.|172\.1[6-9]\.|172\.3[0-1]\.|192\.168\.|172\.2[0-9]\.`)
 					if r.Match([]byte(ip)) {
@@ -260,7 +260,12 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			}
 			code := context.Writer.(*AdminResponseWriter).statusCode
 			log.SetFlags(0)
-			log.Printf("ip=%v user=%v date=%v path=%v method=%v status=%v duration=%v params={%v}", realIP, context.CurrentUser.GetId(), time.Now().Format("2006-01-02 15:03:04"), req.URL.Path, req.Method, code, time.Now().Sub(begin).Seconds()*1000, params)
+			params = getParameters(req)
+			userID := ""
+			if context.CurrentUser != nil {
+				userID = context.CurrentUser.GetId()
+			}
+			log.Printf("ip=%v user=%v date=%v path=%v method=%v status=%v duration=%v params={%v}", realIP, userID, time.Now().Format("2006-01-02 15:03:04"), req.URL.Path, req.Method, code, time.Now().Sub(begin).Seconds()*1000, params)
 		}
 	}()()
 
@@ -280,16 +285,12 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "GET":
 		permissionMode = roles.Read
-		params = getParameters(req)
 	case "PUT":
 		permissionMode = roles.Update
-		params = getParameters(req)
 	case "POST":
 		permissionMode = roles.Create
-		params = getParameters(req)
 	case "DELETE":
 		permissionMode = roles.Delete
-		params = getParameters(req)
 	}
 
 	handlers := admin.router.routers[strings.ToUpper(req.Method)]
