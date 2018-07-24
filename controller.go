@@ -233,7 +233,7 @@ func (ac *Controller) Action(context *Context) {
 			action.Resource.Decode(context.Context, result)
 			actionArgument.Argument = result
 		}
-
+		context.Request.Header.Set("ActionName", action.Label)
 		context.AddError(action.Handler(&actionArgument))
 
 		if !actionArgument.SkipDefaultResponse {
