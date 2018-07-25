@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"path"
 	"path/filepath"
+	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -77,7 +79,8 @@ func (ac *Controller) Create(context *Context) {
 	if context.AddError(res.Decode(context.Context, result)); !context.HasError() {
 		context.AddError(res.CallSave(result, context.Context))
 	}
-
+	id:=strconv.FormatUint(uint64(reflect.ValueOf(result).Elem().FieldByName("ID").Uint()),10)
+	context.Request.Header.Set("ProductedID",id)
 	if context.HasError() {
 		responder.With("html", func() {
 			context.Writer.WriteHeader(HTTPUnprocessableEntity)
