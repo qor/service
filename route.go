@@ -249,7 +249,6 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			if writer, ok := context.Writer.(*AdminResponseWriter); ok {
 				code = writer.statusCode
 			}
-			//code := context.Writer.(*AdminResponseWriter).statusCode
 			log.SetFlags(0)
 			params = getParameters(req)
 			if context.CurrentUser != nil {
