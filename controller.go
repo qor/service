@@ -78,8 +78,8 @@ func (ac *Controller) Create(context *Context) {
 	if context.AddError(res.Decode(context.Context, result)); !context.HasError() {
 		context.AddError(res.CallSave(result, context.Context))
 	}
-	id:=reflect.ValueOf(result).Elem().FieldByName("ID").String()
-	context.Request.Header.Set("ResourceID",id)
+	id := reflect.ValueOf(result).Elem().FieldByName("ID").String()
+	context.Request.Header.Set("ResourceID", id)
 	if context.HasError() {
 		responder.With("html", func() {
 			context.Writer.WriteHeader(HTTPUnprocessableEntity)
