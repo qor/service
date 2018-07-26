@@ -245,7 +245,11 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 				realIP = ip
 				break
 			}
-			code := context.Writer.(*AdminResponseWriter).statusCode
+			var code int
+			if writer, ok := context.Writer.(*AdminResponseWriter); ok {
+				code = writer.statusCode
+			}
+			//code := context.Writer.(*AdminResponseWriter).statusCode
 			log.SetFlags(0)
 			params = getParameters(req)
 			if context.CurrentUser != nil {
