@@ -168,6 +168,7 @@ func (context *Context) FuncMap() template.FuncMap {
 		"load_theme_javascripts": context.loadThemeJavaScripts,
 		"load_admin_stylesheets": context.loadAdminStyleSheets,
 		"load_admin_javascripts": context.loadAdminJavaScripts,
+		"formatted_decimal":      context.formattedDecimal,
 	}
 
 	for key, value := range context.Admin.funcMaps {
@@ -439,6 +440,15 @@ func (context *Context) valueOf(valuer func(interface{}, *qor.Context) interface
 					return nil
 				}
 			}
+
+			if vv, ok := result.(float32); ok {
+				result = utils.FormattedDecimal(vv)
+			}
+
+			if vv, ok := result.(float64); ok {
+				result = utils.FormattedDecimal(vv)
+			}
+
 			return result
 		}
 		return nil
@@ -1218,4 +1228,8 @@ func (context *Context) pageTitle() template.HTML {
 	}
 
 	return context.t(titleKey, defaultValue, resourceName)
+}
+
+func (context *Context) formattedDecimal(number interface{}) template.HTML {
+	return template.HTML(utils.FormattedDecimal(number))
 }
