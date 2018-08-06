@@ -129,7 +129,7 @@ func (s *Searcher) filterData(context *qor.Context, withDefaultScope bool) *qor.
 				}
 
 				if filterWithThisScope {
-					db = scope.Handler(db, context)
+					db = scope.Handler(scope.Name, db, context)
 				}
 			}
 		}
@@ -137,7 +137,7 @@ func (s *Searcher) filterData(context *qor.Context, withDefaultScope bool) *qor.
 
 	// call scopes
 	for _, scope := range s.scopes {
-		db = scope.Handler(db, context)
+		db = scope.Handler(scope.Name, db, context)
 	}
 
 	// call filters
