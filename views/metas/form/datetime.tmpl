@@ -9,19 +9,7 @@
     </div>
 
     <div class="qor-field__edit {{if .Meta.Config.ShowTime}}qor-field__datetimepicker{{else}}qor-field__datepicker{{end}}" data-picker-type="{{if .Meta.Config.ShowTime}}datetime{{else}}date{{end}}">
-      <input class="mdl-textfield__input {{if .Meta.Config.ShowTime}}qor-datetimepicker__input{{else}}qor-datepicker__input{{end}}" placeholder="{{if .Meta.Config.ShowTime}}{{meta_placeholder .Meta .Context " YYYY-MM-DD HH:MM "}}{{else}}{{meta_placeholder .Meta .Context " YYYY-MM-DD "}}{{end}}" type="text" id="{{.InputId}}" name="{{.InputName}}" value="{{.Value}}" {{if  (not (has_change_permission .Meta)) }} disabled{{end}}>
-
-      <div>
-        <button data-toggle="qor.datepicker" class="mdl-button mdl-js-button mdl-button--icon qor-action__datepicker" type="button">
-          <i class="material-icons">date_range</i>
-        </button>
-        {{if .Meta.Config.ShowTime}}
-          <button data-toggle="qor.timepicker" class="mdl-button mdl-js-button mdl-button--icon qor-action__timepicker" type="button">
-            <i class="material-icons">access_time</i>
-          </button>
-        {{end}}
-      </div>
-
+      <input class="js-custom_datepicker mdl-textfield__input {{if .Meta.Config.ShowTime}}qor-datetimepicker__input{{else}}qor-datepicker__input{{end}}" placeholder="{{if .Meta.Config.ShowTime}}{{meta_placeholder .Meta .Context " YYYY-MM-DD HH:MM "}}{{else}}{{meta_placeholder .Meta .Context " YYYY-MM-DD "}}{{end}}" type="text" id="{{.InputId}}" name="{{.InputName}}" value="{{.Value}}" {{if  (not (has_change_permission .Meta)) }} disabled{{end}} autocomplete="off">
     </div>
   </div>
 </div>
