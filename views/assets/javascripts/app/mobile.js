@@ -3,8 +3,12 @@ $(function () {
     $('.qor-page__header').toggleClass('actions-show');
   });
 
-  if($(".js-custom_datepicker").get(0)) {
-    $(".js-custom_datepicker").datetimepicker({ format: 'Y-m-d H:i', timepicker: true});
-    $.datetimepicker.setLocale('ch');
-  }
+  $("body").on("focus",".js-custom_datepicker",function(){
+    if(!$(this).data("is_init")){
+      $(this).datetimepicker({format:'Y-m-d H:i',timepicker:true});
+      $.datetimepicker.setLocale('ch');
+      $(this).data("is_init", true);
+      $(this).focus();
+    }
+  });
 });
