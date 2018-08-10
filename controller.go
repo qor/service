@@ -8,7 +8,6 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
-	"strconv"
 	"strings"
 	"time"
 
@@ -79,9 +78,7 @@ func (ac *Controller) Create(context *Context) {
 	if context.AddError(res.Decode(context.Context, result)); !context.HasError() {
 		context.AddError(res.CallSave(result, context.Context))
 	}
-	id := reflect.ValueOf(result).Elem().FieldByName("ID").Uint()
-	stringID := strconv.FormatUint(id, 10)
-	context.Request.Header.Set("ResourceID", stringID)
+	context.Request.Header.Set("ResourceID", fmt.Sprintf("%v", reflect.ValueOf(result).Elem().FieldByName("ID")))
 	if context.HasError() {
 		responder.With("html", func() {
 			context.Writer.WriteHeader(HTTPUnprocessableEntity)
