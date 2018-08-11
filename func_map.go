@@ -449,6 +449,10 @@ func (context *Context) valueOf(valuer func(interface{}, *qor.Context) interface
 				result = utils.FormattedDecimal(vv)
 			}
 
+			if meta.Type == "date" {
+				result = strings.Split(result.(string), " ")[0]
+			}
+
 			return result
 		}
 		return nil
