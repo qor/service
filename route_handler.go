@@ -15,15 +15,15 @@ type RouteConfig struct {
 	Values         map[interface{}]interface{}
 }
 
-type requestHandler func(c *Context)
+type RequestHandler func(c *Context)
 
 type routeHandler struct {
 	Path   string
-	Handle requestHandler
+	Handle RequestHandler
 	Config *RouteConfig
 }
 
-func newRouteHandler(path string, handle requestHandler, configs ...*RouteConfig) *routeHandler {
+func newRouteHandler(path string, handle RequestHandler, configs ...*RouteConfig) *routeHandler {
 	handler := &routeHandler{
 		Path:   "/" + strings.TrimPrefix(path, "/"),
 		Handle: handle,
