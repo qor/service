@@ -235,7 +235,7 @@ func (meta *Meta) updateMeta() {
 						} else {
 							meta.Type = "string"
 						}
-					} else if text, ok := utils.ParseTagOption(tag.Get("sql"))["TYPE"]; ok && text == "text" {
+					} else if text, ok := utils.ParseTagOption(tag.Get("sql"))["TYPE"]; ok && (text == "text" || text == "longtext" || text == "longblob") {
 						meta.Type = "text"
 					} else {
 						meta.Type = "string"
