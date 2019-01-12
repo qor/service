@@ -204,20 +204,8 @@ func (meta *Meta) configure() {
 						meta.Type = "datetime"
 					} else if _, ok := reflect.New(fieldType).Interface().(**big.Int); ok {
 						meta.Type = "float"
-						meta.SetSetter(func(resource interface{}, metaValue *resource.MetaValue, context *qor.Context) {
-							reflectValue := reflect.Indirect(reflect.ValueOf(resource))
-							if reflectValue.String() == "" {
-								reflectValue.SetFloat(0)
-							}
-						})
 					} else if _, ok := reflect.New(fieldType).Interface().(*big.Int); ok {
 						meta.Type = "float"
-						meta.SetSetter(func(resource interface{}, metaValue *resource.MetaValue, context *qor.Context) {
-							reflectValue := reflect.Indirect(reflect.ValueOf(resource))
-							if reflectValue.String() == "" {
-								reflectValue.SetFloat(0)
-							}
-						})
 					} else {
 						if fieldType.Kind() == reflect.Struct {
 							meta.Type = "single_edit"
