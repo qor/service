@@ -2,6 +2,7 @@ package admin
 
 import (
 	"database/sql"
+	"math/big"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -201,6 +202,10 @@ func (meta *Meta) configure() {
 						meta.Type = "float"
 					} else if _, ok := reflect.New(fieldType).Interface().(*time.Time); ok {
 						meta.Type = "datetime"
+					} else if _, ok := reflect.New(fieldType).Interface().(**big.Int); ok {
+						meta.Type = "float"
+					} else if _, ok := reflect.New(fieldType).Interface().(*big.Int); ok {
+						meta.Type = "float"
 					} else {
 						if fieldType.Kind() == reflect.Struct {
 							meta.Type = "single_edit"
