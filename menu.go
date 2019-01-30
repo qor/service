@@ -46,6 +46,7 @@ func (admin Admin) GetMenu(name ...string) *Menu {
 // Menu admin sidebar menu definiation
 type Menu struct {
 	Name         string
+	IconName     string
 	Link         string
 	RelativePath string
 	Priority     int
