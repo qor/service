@@ -58,6 +58,12 @@ func (context *Context) FuncMap() template.FuncMap {
 		"singular": func(value interface{}) string {
 			return inflection.Singular(fmt.Sprint(value))
 		},
+		"get_icon": func(m *menu) string {
+			if m.IconName != "" {
+				return m.IconName
+			}
+			return m.Name
+		},
 		"marshal": func(v interface{}) template.JS {
 			switch value := v.(type) {
 			case string:
