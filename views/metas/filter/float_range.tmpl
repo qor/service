@@ -1,0 +1,29 @@
+<div class="qor-field clearfix" type="filter-float_range">
+  <label class="qor-field__label">
+    {{t (printf "%v.filter.%v" .Resource.ToParam .Filter.Label) .Filter.Label}}
+  </label>
+
+  {{ $start := .Context.Request.URL.Query.Get (print .InputNamePrefix ".Start") }}
+  <advanced-filter-group style="width: 40%">
+    <div class="mdl-textfield mdl-textfield--full-width mdl-js-textfield">
+      <label class="qor-field__label mdl-textfield__label"></label>
+      <input class="mdl-textfield__input" type="number" step="any" name="{{.InputNamePrefix}}.Start" value="{{$start}}">
+    </div>
+  </advanced-filter-group>
+  <span style="margin-right: 13px"> - </span>
+  {{ $end := .Context.Request.URL.Query.Get (print .InputNamePrefix ".End") }}
+  <advanced-filter-group style="width: 40%">
+    <div class="mdl-textfield mdl-textfield--full-width mdl-js-textfield">
+      <label class="qor-field__label mdl-textfield__label"></label>
+      <input class="mdl-textfield__input" type="number" step="any" name="{{.InputNamePrefix}}.End" value="{{$end}}">
+    </div>
+  </advanced-filter-group>
+</div>
+<style>
+  [type="filter-float_range"] {
+      width: 22%;
+      display: inline-block;
+      margin-right: 15px;
+      margin-bottom: 15px;
+  }
+</style>
