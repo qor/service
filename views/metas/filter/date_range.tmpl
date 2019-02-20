@@ -1,0 +1,47 @@
+<div class="qor-field clearfix" type="filter-date_range">
+  <label class="qor-field__label">
+    {{t (printf "%v.filter.%v" .Resource.ToParam .Filter.Label) .Filter.Label}}
+  </label>
+
+  {{ $start := .Context.Request.URL.Query.Get (print .InputNamePrefix ".Start") }}
+  <advanced-filter-group>
+    <div class="qor-field__edit qor-field__datepicker" data-picker-type="date">
+      <div class="mdl-textfield mdl-js-textfield">
+        <label class="qor-field__label mdl-textfield__label"></label>
+        <input class="mdl-textfield__input qor-datepicker__input" placeholder="{{t (printf "%v.filter.%v.start" .Resource.ToParam .Filter.Name) " Date "}}" type="text" name="{{.InputNamePrefix}}.Start" value="{{$start}}" filter-required>
+      </div>
+      <div>
+        <button data-toggle="qor.datepicker" class="mdl-button mdl-js-button mdl-button--icon qor-action__datepicker" type="button">
+          <i class="material-icons">date_range</i>
+        </button>
+      </div>
+    </div>
+  </advanced-filter-group>
+  <span> - </span>
+  {{ $end := .Context.Request.URL.Query.Get (print .InputNamePrefix ".End") }}
+  <advanced-filter-group>
+    <div class="qor-field__edit qor-field__datepicker" data-picker-type="date">
+      <div class="mdl-textfield mdl-js-textfield">
+        <label class="qor-field__label mdl-textfield__label"></label>
+        <input class="mdl-textfield__input qor-datepicker__input" placeholder="{{t (printf "%v.filter.%v.end" .Resource.ToParam .Filter.Name) " Date "}}" type="text" name="{{.InputNamePrefix}}.End" value="{{$end}}" filter-required>
+      </div>
+      <div>
+        <button data-toggle="qor.datepicker" class="mdl-button mdl-js-button mdl-button--icon qor-action__datepicker" type="button">
+          <i class="material-icons">date_range</i>
+        </button>
+      </div>
+    </div>
+  </advanced-filter-group>
+</div>
+<style>
+  [type="filter-date_range"] {
+      width: 40%;
+      display: inline-block;
+      margin-right: 15px;
+      margin-bottom: 15px;
+  }
+  .qor-field__datepicker[data-picker-type=date] .qor-action__datepicker {
+      right: -10px;
+      bottom: 20px;
+  }
+</style>
