@@ -4,7 +4,7 @@
   </label>
 
   {{ $start := .Context.Request.URL.Query.Get (print .InputNamePrefix ".Start") }}
-  <advanced-filter-group style="width: 40%">
+  <advanced-filter-group style="width: 40%; margin-right: 10px">
     <div class="qor-field__edit qor-field__datepicker" data-picker-type="date">
       <div class="mdl-textfield mdl-js-textfield">
         <label class="qor-field__label mdl-textfield__label"></label>
@@ -17,7 +17,7 @@
       </div>
     </div>
   </advanced-filter-group>
-  <span style="margin-right: 13px"> - </span>
+  <span style="margin-right: 6px"> - </span>
   {{ $end := .Context.Request.URL.Query.Get (print .InputNamePrefix ".End") }}
   <advanced-filter-group style="width: 40%">
     <div class="qor-field__edit qor-field__datepicker" data-picker-type="date">

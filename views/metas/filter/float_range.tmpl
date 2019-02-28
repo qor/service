@@ -4,13 +4,13 @@
   </label>
 
   {{ $start := .Context.Request.URL.Query.Get (print .InputNamePrefix ".Start") }}
-  <advanced-filter-group style="width: 40%">
+  <advanced-filter-group style="width: 40%; margin-right: 6px">
     <div class="mdl-textfield mdl-textfield--full-width mdl-js-textfield">
       <label class="qor-field__label mdl-textfield__label"></label>
       <input class="mdl-textfield__input" type="number" step="any" name="{{.InputNamePrefix}}.Start" value="{{$start}}">
     </div>
   </advanced-filter-group>
-  <span style="margin-right: 13px"> - </span>
+  <span style="margin-right: 8px"> - </span>
   {{ $end := .Context.Request.URL.Query.Get (print .InputNamePrefix ".End") }}
   <advanced-filter-group style="width: 40%">
     <div class="mdl-textfield mdl-textfield--full-width mdl-js-textfield">
