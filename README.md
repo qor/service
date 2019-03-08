@@ -26,7 +26,6 @@ import (
   "net/http"
   "github.com/jinzhu/gorm"
   _ "github.com/mattn/go-sqlite3"
-  "github.com/qor/qor"
   "github.com/qor/admin"
 )
 
