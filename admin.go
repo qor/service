@@ -74,10 +74,6 @@ func New(config interface{}) *Admin {
 
 	admin.SetAssetFS(admin.AssetFS)
 
-	if admin.AdminConfig.DB != nil {
-		admin.AdminConfig.DB.AutoMigrate(&QorAdminSetting{})
-	}
-
 	admin.registerCompositePrimaryKeyCallback()
 	return &admin
 }
