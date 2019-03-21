@@ -220,6 +220,8 @@ func (context *Context) Execute(name string, result interface{}) {
 		} else {
 			utils.ExitWithMsg(err)
 		}
+	} else {
+		utils.ExitWithMsg(err)
 	}
 
 	context.Result = result
