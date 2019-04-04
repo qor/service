@@ -188,7 +188,16 @@ func (ac *Controller) Update(context *Context) {
 		}).Respond(context.Request)
 	} else {
 		responder.With("html", func() {
-			context.Flash(string(context.t("qor_admin.form.successfully_updated", "{{.Name}} was successfully updated", res)), "success")
+			var (
+				flashs = context.Admin.SessionManager.Flashes(context.Writer, context.Request)
+			)
+			var message string
+			if len(flashs) == 1 {
+				message = string(flashs[0].Message)
+			} else {
+				message = string(context.t("qor_admin.form.successfully_updated", "{{.Name}} was successfully updated", res))
+			}
+			context.Flash(string(message), "success")
 			context.Execute("show", result)
 		}).With([]string{"json", "xml"}, func() {
 			context.Encode("show", result)
