@@ -189,11 +189,11 @@ func (ac *Controller) Update(context *Context) {
 	} else {
 		responder.With("html", func() {
 			var (
-				flashs = context.Admin.SessionManager.Flashes(context.Writer, context.Request)
+				flashes = context.Admin.SessionManager.Flashes(context.Writer, context.Request)
 			)
 			var message string
-			if len(flashs) == 1 {
-				message = string(flashs[0].Message)
+			if len(flashes) == 1 {
+				message = string(flashes[0].Message)
 			} else {
 				message = string(context.t("qor_admin.form.successfully_updated", "{{.Name}} was successfully updated", res))
 			}
