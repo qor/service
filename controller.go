@@ -89,7 +89,14 @@ func (ac *Controller) Create(context *Context) {
 		}).Respond(context.Request)
 	} else {
 		responder.With("html", func() {
-			context.Flash(string(context.t("qor_admin.form.successfully_created", "{{.Name}} was successfully created", res)), "success")
+			var (
+				flashes = context.Admin.SessionManager.Flashes(context.Writer, context.Request)
+				message = string(context.t("qor_admin.form.successfully_updated", "{{.Name}} was successfully updated", res))
+			)
+			if len(flashes) != 0 {
+				message = string(flashes[0].Message)
+			}
+			context.Flash(string(message), "success")
 			http.Redirect(context.Writer, context.Request, context.URLFor(result, res), http.StatusFound)
 		}).With([]string{"json", "xml"}, func() {
 			context.Writer.WriteHeader(status)
@@ -188,7 +195,14 @@ func (ac *Controller) Update(context *Context) {
 		}).Respond(context.Request)
 	} else {
 		responder.With("html", func() {
-			context.Flash(string(context.t("qor_admin.form.successfully_updated", "{{.Name}} was successfully updated", res)), "success")
+			var (
+				flashes = context.Admin.SessionManager.Flashes(context.Writer, context.Request)
+				message = string(context.t("qor_admin.form.successfully_updated", "{{.Name}} was successfully updated", res))
+			)
+			if len(flashes) != 0 {
+				message = string(flashes[0].Message)
+			}
+			context.Flash(string(message), "success")
 			context.Execute("show", result)
 		}).With([]string{"json", "xml"}, func() {
 			context.Encode("show", result)
