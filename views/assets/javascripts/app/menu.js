@@ -10,7 +10,7 @@ $(function() {
   }
 
   $('.qor-menu-container')
-    .on('click', '> ul > li > a', function() {
+    .on('click', '> ul > li a.has-submenu', function() {
       let $this = $(this),
         $li = $this.parent(),
         $ul = $this.next('ul'),
@@ -22,28 +22,34 @@ $(function() {
 
       if ($ul.hasClass('in')) {
         menuDatas.push(menuName);
-
         $li.removeClass('is-expanded');
-        $ul
-          .one('transitionend', function() {
-            $ul.removeClass('collapsing in');
-          })
-          .addClass('collapsing')
-          .height(0);
+
+//        $ul
+//          .one('transitionend', function() {
+//            $ul.removeClass('collapsing in');
+//          })
+//          .addClass('collapsing')
+//          .height(0);
+
+        $ul.removeClass('collapsing in');
+
       } else {
         menuDatas = _.without(menuDatas, menuName);
 
         $li.addClass('is-expanded');
-        $ul
-          .one('transitionend', function() {
-            $ul.removeClass('collapsing');
-          })
-          .addClass('collapsing in')
-          .height($ul.prop('scrollHeight'));
+        //$ul
+        //  .one('transitionend', function() {
+        //    $ul.removeClass('collapsing');
+        //  })
+        //  .addClass('collapsing in')
+        //  .height($ul.prop('scrollHeight'));
+
+        $ul.addClass('collapsing in');
+
       }
       localStorage.setItem(storageName, menuDatas);
     })
-    .find('> ul > li > a')
+    .find('> ul > li a.has-submenu')
     .each(function() {
       let $this = $(this),
         $li = $this.parent(),
@@ -58,10 +64,11 @@ $(function() {
       $li.addClass('has-menu');
 
       if (menuDatas.indexOf(menuName) != -1) {
-        $ul.height(0);
+        //$ul.height(0);
       } else {
         $li.addClass('is-expanded');
-        $ul.addClass('in').height($ul.prop('scrollHeight'));
+        //$ul.addClass('in').height($ul.prop('scrollHeight'));
+        $ul.addClass('in');
       }
     });
 
@@ -77,4 +84,5 @@ $(function() {
     $('.qor-page').addClass('has-header');
     $('header.mdl-layout__header').addClass('has-action');
   }
-});
+})
+
