@@ -930,7 +930,7 @@ func (context *Context) javaScriptTag(names ...string) template.HTML {
 	var results []string
 	for _, name := range names {
 		name = path.Join(context.Admin.GetRouter().Prefix, "assets", "javascripts", name+".js")
-		results = append(results, fmt.Sprintf(`<script src="%s"></script>`, name))
+		results = append(results, fmt.Sprintf(`<script async src="%s"></script>`, name))
 	}
 	return template.HTML(strings.Join(results, ""))
 }
