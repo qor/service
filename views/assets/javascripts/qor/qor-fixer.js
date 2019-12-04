@@ -107,6 +107,7 @@
                 $thead.css({top: pageTop});
                 $element.addClass(CLASS_FIXED_TABLE);
             } else {
+                $thead.css({top: 0});
                 $element.removeClass(CLASS_FIXED_TABLE);
             }
         },
