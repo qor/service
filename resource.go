@@ -686,7 +686,7 @@ func (res *Resource) GetMeta(name string) *Meta {
 	}
 
 	if fallbackMeta == nil {
-		if field, ok := res.GetAdmin().DB.NewScope(res.Value).FieldByName(name); ok {
+		if field, ok := res.GetAdmin().GetDB(false).NewScope(res.Value).FieldByName(name); ok {
 			meta := &Meta{Name: name, baseResource: res}
 			if field.IsPrimaryKey {
 				meta.Type = "hidden_primary_key"

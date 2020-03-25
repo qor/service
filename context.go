@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"path/filepath"
 
+	"github.com/jinzhu/gorm"
 	"github.com/qor/qor"
 	"github.com/qor/qor/utils"
 	"github.com/qor/roles"
@@ -32,6 +33,16 @@ type Context struct {
 func (admin *Admin) NewContext(w http.ResponseWriter, r *http.Request) *Context {
 	return &Context{Context: &qor.Context{Config: &qor.Config{DB: admin.DB}, Request: r, Writer: w}, Admin: admin, Settings: map[string]interface{}{}}
 }
+
+// Funcs to get DB object
+func (context *Context) GetSingleDB(forWrite bool) *gorm.DB{
+	writeDB := context.Admin.GetDB(forWrite)
+	if writeDB != nil {
+		return writeDB
+	}
+	return context.GetDB()
+}
+
 
 // Funcs register FuncMap for templates
 func (context *Context) Funcs(funcMaps template.FuncMap) *Context {

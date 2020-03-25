@@ -20,13 +20,47 @@ import (
 type AdminConfig struct {
 	// SiteName set site's name, the name will be used as admin HTML title and admin interface will auto load javascripts, stylesheets files based on its value
 	SiteName        string
+	//Depreciated, Please use DBWrite
 	DB              *gorm.DB
+	//Synonym for DB i.e. it also represents Master DB
+	DBWrite         *gorm.DB
+	//it will used for read query id ReadMaster flag is false. it also represents Slave DB
+	DBRead          *gorm.DB
+	//Set true to Allowed read query from DBWrite instead of DBRead
+	ReadMaster      bool
 	Auth            Auth
 	AssetFS         assetfs.Interface
 	SessionManager  session.ManagerInterface
 	SettingsStorage SettingsStorageInterface
 	I18n            I18n
 	*Transformer
+}
+
+func (adminConf *AdminConfig) GetDB(forWrite bool) *gorm.DB{
+	if forWrite{
+		if adminConf.DBWrite != nil {
+			return adminConf.DBWrite
+		}
+	} else {
+		if adminConf.DBRead != nil {
+			return adminConf.DBRead
+		}
+	}
+	//Added for backward compatability, if dbWrite and dbRead are nil
+	return adminConf.DB
+}
+
+// Additional function to get both Write DB and Read DB object
+func (adminConf *AdminConfig) GetMultiDB() (*gorm.DB, *gorm.DB){
+	return adminConf.GetDB(true), adminConf.GetDB(false)
+}
+
+func (adminConf *AdminConfig) SetMultiDB(dbWrite *gorm.DB, dbRead *gorm.DB){
+	adminConf.DBWrite = dbWrite
+	adminConf.DBRead = dbRead
+
+	//Added for backward compatibility, if adminConf.DB is directly used in other module
+	adminConf.DB = dbWrite
 }
 
 // Admin is a struct that used to generate admin/api interface
@@ -52,6 +86,16 @@ func New(config interface{}) *Admin {
 		admin.AdminConfig = &AdminConfig{DB: c.DB}
 	} else if c, ok := config.(*AdminConfig); ok {
 		admin.AdminConfig = c
+		// Added for backward compatability i.e. to use AdminConfig.DB value for read and write DB if AdminConfig.DBWrite/DBRead are not set
+		if admin.AdminConfig.DBWrite == nil{
+			admin.AdminConfig.DBWrite = admin.AdminConfig.GetDB(true)
+		}
+		if admin.AdminConfig.DBRead == nil{
+			admin.AdminConfig.DBRead = admin.AdminConfig.GetDB(false)
+		}
+		if admin.AdminConfig.DB == nil{
+			admin.AdminConfig.DB = admin.AdminConfig.GetDB(true)
+		}
 	} else {
 		admin.AdminConfig = &AdminConfig{}
 	}
@@ -69,13 +113,13 @@ func New(config interface{}) *Admin {
 	}
 
 	if admin.SettingsStorage == nil {
-		admin.SettingsStorage = newSettings(admin.AdminConfig.DB)
+		admin.SettingsStorage = newSettings(admin.AdminConfig.GetDB(true))
 	}
 
 	admin.SetAssetFS(admin.AssetFS)
 
-	if admin.AdminConfig.DB != nil {
-		admin.AdminConfig.DB.AutoMigrate(&QorAdminSetting{})
+	if admin.AdminConfig.GetDB(true) != nil {
+		admin.AdminConfig.GetDB(true).AutoMigrate(&QorAdminSetting{})
 	}
 
 	admin.registerCompositePrimaryKeyCallback()

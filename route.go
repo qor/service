@@ -229,7 +229,6 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 		context.CurrentUser = currentUser
-		context.SetDB(context.GetDB().Set("qor:current_user", context.CurrentUser))
 	}
 	context.Roles = roles.MatchedRoles(req, currentUser)
 
@@ -251,6 +250,12 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 				req.URL.RawQuery = url.Values(params).Encode() + "&" + req.URL.RawQuery
 			}
 			context.RouteHandler = handler
+			db := context.GetSingleDB(handler.Config.PermissionMode!=roles.Read)
+			if admin.Auth != nil {
+				context.SetDB(db.Set("qor:current_user", context.CurrentUser))
+			} else {
+				context.SetDB(db)
+			}
 
 			context.setResource(handler.Config.Resource)
 			if context.Resource == nil {
