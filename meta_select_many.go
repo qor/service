@@ -19,6 +19,7 @@ type SelectManyConfig struct {
 	SelectMode               string // select, select_async, bottom_sheet
 	Select2ResultTemplate    template.JS
 	Select2SelectionTemplate template.JS
+	ForSerializedObject      bool
 	RemoteDataResource       *Resource
 	RemoteDataHasImage       bool
 	PrimaryField             string

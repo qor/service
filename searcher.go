@@ -270,10 +270,16 @@ func (s *Searcher) parseContext(withDefaultScope bool) *qor.Context {
 		}
 	}
 
+	limit := s.Pagination.PerPage
+	if s.Context.Request != nil {
+		if l, err := strconv.Atoi(s.Context.Request.Form.Get("limit")); err == nil {
+			limit = l
+		}
+	}
+
 	if s.Pagination.CurrentPage > 0 {
 		s.Pagination.Pages = (s.Pagination.Total-1)/s.Pagination.PerPage + 1
-
-		db = db.Limit(s.Pagination.PerPage).Offset((s.Pagination.CurrentPage - 1) * s.Pagination.PerPage)
+		db = db.Limit(limit).Offset((s.Pagination.CurrentPage - 1) * s.Pagination.PerPage)
 	}
 
 	context.SetDB(db)

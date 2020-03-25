@@ -26,7 +26,6 @@ import (
   "net/http"
   "github.com/jinzhu/gorm"
   _ "github.com/mattn/go-sqlite3"
-  "github.com/qor/qor"
   "github.com/qor/admin"
 )
 
@@ -47,7 +46,7 @@ func main() {
   DB, _ := gorm.Open("sqlite3", "demo.db")
   DB.AutoMigrate(&User{}, &Product{})
 
-  // Initalize
+  // Initialize
   Admin := admin.New(&admin.AdminConfig{DB: DB})
 
   // Allow to use Admin to manage User, Product

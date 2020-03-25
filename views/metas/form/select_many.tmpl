@@ -5,7 +5,7 @@
 
   {{$current_values := (raw_value_of .ResourceValue .Meta)}}
   <div class="qor-field__show qor-field__selectmany-show">
-    {{range $value := $current_values}}
+    {{range $value := .Value}}
       <span>{{stringify $value}}</span>
     {{end}}
   </div>
