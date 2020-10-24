@@ -148,7 +148,7 @@ func (admin *Admin) NewServeMux(prefix string) http.Handler {
 		Name: "csrf_check",
 		Handler: func(context *Context, middleware *Middleware) {
 			request := context.Request
-			if request.Method != "GET" {
+			if request.Method != "GET" && request.Header.Get("Authorization") == "" {
 				if browserUserAgentRegexp.MatchString(request.UserAgent()) {
 					if referrer := request.Referer(); referrer != "" {
 						if r, err := url.Parse(referrer); err == nil {
