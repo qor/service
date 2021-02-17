@@ -12,13 +12,14 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/qor/admin"
 	. "github.com/qor/admin/tests/dummy"
+	qorTestUtils "github.com/qor/qor/test/utils"
 )
 
 func TestCreateRecord(t *testing.T) {
 	form := url.Values{
 		"QorResource.Name": {"create_record"},
-		"QorResource.Role": {"admin"},
 	}
 
 	if req, err := http.PostForm(server.URL+"/admin/users", form); err == nil {
@@ -38,7 +39,7 @@ func TestCreateBelongsToRecord(t *testing.T) {
 	name := "create_belongs_to_record"
 	form := url.Values{
 		"QorResource.Name":              {name},
-		"QorResource.Role":              {"admin"},
+		"QorResource.Role":              {Role_system_administrator},
 		"QorResource.CreditCard.Number": {"1234567890"},
 		"QorResource.CreditCard.Issuer": {"Visa"},
 	}
@@ -65,7 +66,7 @@ func TestCreateHasManyRecord(t *testing.T) {
 	name := "create_record_and_has_many"
 	form := url.Values{
 		"QorResource.Name":                  {name},
-		"QorResource.Role":                  {"admin"},
+		"QorResource.Role":                  {Role_system_administrator},
 		"QorResource.Addresses[0].Address1": {"address_1"},
 		"QorResource.Addresses[1].Address1": {"address_2"},
 		"QorResource.Addresses[2].ID":       {"0"},
@@ -103,7 +104,7 @@ func TestCreateHasManyRecordWithOrder(t *testing.T) {
 	name := "create_record_and_has_many_with_order"
 	form := url.Values{
 		"QorResource.Name":                   {name},
-		"QorResource.Role":                   {"admin"},
+		"QorResource.Role":                   {Role_system_administrator},
 		"QorResource.Addresses[0].Address1":  {"address_0"},
 		"QorResource.Addresses[1].Address1":  {"address_1"},
 		"QorResource.Addresses[2].Address1":  {"address_2"},
@@ -159,7 +160,7 @@ func TestCreateManyToManyRecord(t *testing.T) {
 
 	form := url.Values{
 		"QorResource.Name":      {name},
-		"QorResource.Role":      {"admin"},
+		"QorResource.Role":      {Role_system_administrator},
 		"QorResource.Languages": {fmt.Sprintf("%d", languageCN.ID), fmt.Sprintf("%d", languageEN.ID)},
 	}
 
@@ -197,7 +198,7 @@ func TestUploadAttachment(t *testing.T) {
 		}
 		form := url.Values{
 			"QorResource.Name": {name},
-			"QorResource.Role": {"admin"},
+			"QorResource.Role": {Role_system_administrator},
 		}
 		for key, val := range form {
 			_ = writer.WriteField(key, val[0])
@@ -222,6 +223,9 @@ func TestUploadAttachment(t *testing.T) {
 }
 
 func TestCreateRecordWithJSON(t *testing.T) {
+	qorTestUtils.ResetDBTables(db, &admin.Group{}, &Language{}, &Address{}, &CreditCard{}, &User{})
+	createLoggedInUser()
+
 	name := "api_create_record"
 
 	var languageCN Language
@@ -230,7 +234,7 @@ func TestCreateRecordWithJSON(t *testing.T) {
 	db.FirstOrCreate(&languageEN, Language{Name: "EN"})
 
 	json := fmt.Sprintf(`{"Name":"api_create_record",
-                        "Role":"admin",
+	                      "Role":"admin",
                           "CreditCard": {"Number": "987654321", "Issuer": "Visa"},
                           "Addresses": [{"Address1": "address_1"}, {"Address1": "address_2"}, {"_id": "0"}],
                           "Languages": [%v, %v]
@@ -238,8 +242,8 @@ func TestCreateRecordWithJSON(t *testing.T) {
 
 	buf := strings.NewReader(json)
 
-	if req, err := http.Post(server.URL+"/admin/users", "application/json", buf); err == nil {
-		if req.StatusCode != 200 {
+	if resp, err := http.Post(server.URL+"/admin/users", "application/json", buf); err == nil {
+		if resp.StatusCode != 200 {
 			t.Errorf("Create request should be processed successfully")
 		}
 

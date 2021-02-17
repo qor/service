@@ -6,22 +6,20 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/qor/admin"
 	. "github.com/qor/admin/tests/dummy"
+	qorTestUtils "github.com/qor/qor/test/utils"
 	"github.com/theplant/htmltestingutils"
 )
 
 func TestEditPage(t *testing.T) {
-	h, _, _ := NewTestHandler()
+	qorTestUtils.ResetDBTables(db, &admin.Group{}, &Language{}, &User{})
+	user := createLoggedInUser()
 
-	var err error
-	user := User{Name: "my record", Role: "admin"}
-	err = db.Save(&user).Error
-	if err != nil {
-		t.Fatal(err)
-	}
+	h := adminHandler
 
 	var req *http.Request
-	req, err = http.NewRequest("GET", fmt.Sprintf("/admin/users/%d/edit", user.ID), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("/admin/users/%d/edit", user.ID), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,7 +29,7 @@ func TestEditPage(t *testing.T) {
 	h.ServeHTTP(rr, req)
 
 	// assert only form so that other sections won't break the tests
-	diff := htmltestingutils.PrettyHtmlDiff(rr.Body, "form", expectedBody)
+	diff := htmltestingutils.PrettyHtmlDiff(rr.Body, "form.qor-form", expectedBody)
 	if len(diff) > 0 {
 		t.Error(diff)
 	}
@@ -65,10 +63,10 @@ var expectedBody = `
 Name
 </label>
 
-<div class="qor-field__show">my record</div>
+<div class="qor-field__show">QOR</div>
 
 <div class="qor-field__edit">
-<input class="mdl-textfield__input" type="text" id="user_1_name" name="QorResource.Name" value="my record" >
+<input class="mdl-textfield__input" type="text" id="user_1_name" name="QorResource.Name" value="QOR" >
 </div>
 </div>
 </div>

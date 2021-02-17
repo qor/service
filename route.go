@@ -243,10 +243,10 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	case "DELETE":
 		permissionMode = roles.Delete
 	}
-
 	handlers := admin.router.routers[strings.ToUpper(req.Method)]
+
 	for _, handler := range handlers {
-		if params, _, ok := utils.ParamsMatch(handler.Path, RelativePath); ok && handler.HasPermission(permissionMode, context.Context) {
+		if params, _, ok := utils.ParamsMatch(handler.Path, RelativePath); ok && handler.HasPermission(permissionMode, context) {
 			if len(params) > 0 {
 				req.URL.RawQuery = url.Values(params).Encode() + "&" + req.URL.RawQuery
 			}

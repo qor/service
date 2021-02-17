@@ -12,11 +12,31 @@ func (admin Admin) GetMenus() []*Menu {
 	return admin.menus
 }
 
+// GetSelfMenuTree returns all the offspring menus of given menu. if given menu has no submenu, return itself.
+func GetSelfMenuTree(m *Menu) (result []*Menu) {
+	if len(m.GetSubMenus()) == 0 {
+		result = append(result, m)
+		return
+	}
+
+	for _, subM := range m.GetSubMenus() {
+		result = append(result, GetSelfMenuTree(subM)...)
+	}
+
+	return
+}
+
 // AddMenu add a menu to admin sidebar
 func (admin *Admin) AddMenu(menu *Menu) *Menu {
+	// TODO: Consider warn user for menus larger than 2 levels. since we only support 2 levels menu atm.
+	// if len(menu.Ancestors) > 1 {
+	// 	panic(fmt.Sprintf("QOR admin now only support 2 levels of menu, but got %q", menu.Ancestors))
+	// }
+
 	menu.router = admin.router
 
 	names := append(menu.Ancestors, menu.Name)
+
 	if old := admin.GetMenu(names...); old != nil {
 		if len(names) > 1 || len(old.Ancestors) == 0 {
 			old.Link = menu.Link
@@ -31,6 +51,7 @@ func (admin *Admin) AddMenu(menu *Menu) *Menu {
 	}
 
 	admin.menus = appendMenu(admin.menus, menu.Ancestors, menu)
+
 	return menu
 }
 
@@ -45,14 +66,16 @@ func (admin Admin) GetMenu(name ...string) *Menu {
 
 // Menu admin sidebar menu definiation
 type Menu struct {
-	Name         string
-	IconName     string
-	Link         string
-	RelativePath string
-	Priority     int
-	Ancestors    []string
-	Permissioner HasPermissioner
-	Permission   *roles.Permission
+	Name               string
+	IconName           string
+	Link               string
+	RelativePath       string
+	Priority           int
+	Ancestors          []string
+	Permissioner       HasPermissioner
+	Permission         *roles.Permission
+	Invisible          bool
+	AssociatedResource *Resource
 
 	subMenus []*Menu
 	router   *Router
@@ -72,20 +95,61 @@ func (menu Menu) URL() string {
 }
 
 // HasPermission check menu has permission or not
-func (menu Menu) HasPermission(mode roles.PermissionMode, context *qor.Context) bool {
-	if menu.Permission != nil {
-		var roles = []interface{}{}
-		for _, role := range context.Roles {
-			roles = append(roles, role)
+func (menu Menu) HasPermission(mode roles.PermissionMode, context *Context) (result bool) {
+	// When menu has no Permission and Permissioner set, this implicitly means it has no resource associated.
+	// But it also can be controlled by group permission
+	if menu.Permission == nil && menu.Permissioner == nil {
+		result = true
+	}
+
+	checkMenuRolePermission := func(menu Menu, previousResult bool) bool {
+		if menu.Permission != nil {
+			var roles = []interface{}{}
+			for _, role := range context.Roles {
+				roles = append(roles, role)
+			}
+			return menu.Permission.HasPermission(mode, roles...)
+		} else if menu.Permissioner != nil {
+			// When group is enabled, resource with no Permission set will no longer return true. But return group permission result instead.
+			if context.Context.Config == nil {
+				context.Context.Config = &qor.Config{GroupPermissionEnabled: context.Admin.IsGroupEnabled(), GroupPermissionResult: previousResult}
+			} else {
+				context.Context.Config.GroupPermissionEnabled = context.Admin.IsGroupEnabled()
+				context.Context.Config.GroupPermissionResult = previousResult
+			}
+
+			return menu.Permissioner.HasPermission(mode, context.Context)
 		}
-		return menu.Permission.HasPermission(mode, roles...)
+
+		return previousResult
 	}
 
-	if menu.Permissioner != nil {
-		return menu.Permissioner.HasPermission(mode, context)
+	// Check group permission first, since it has lower priority than roles.
+	if context.Admin.IsGroupEnabled() {
+		// If menu has sub menus, we check sub menus permission instead.
+		// As long as one of the sub menus has permission, then the parent menus has permission too.
+		for _, m := range GetSelfMenuTree(&menu) {
+			menuName := m.Name
+			// If menu belongs to a resource, we check that resource permission instead of menu's.
+			if m.AssociatedResource != nil {
+				menuName = m.AssociatedResource.Name
+			}
+
+			result = ResourceAllowedByGroup(context, menuName)
+			if result {
+				break
+			}
+
+			if checkMenuRolePermission(*m, result) {
+				result = true
+				break
+			}
+		}
 	}
 
-	return true
+	result = checkMenuRolePermission(menu, result)
+
+	return
 }
 
 // GetSubMenus get submenus for a menu
@@ -116,6 +180,9 @@ func getMenu(menus []*Menu, names ...string) *Menu {
 	return nil
 }
 
+// generateMenu generates menu from the ancestors, only keep the first and last one.
+// E.g. ancestors is []string{"Management", "Product Management"}, menu is "Product".
+// The result would be "Management > Product". QOR only support 2 levels of menu.
 func generateMenu(menus []string, menu *Menu) *Menu {
 	menuCount := len(menus)
 	for index := range menus {

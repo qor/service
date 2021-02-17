@@ -1,0 +1,55 @@
+{{$metaConfig := .Meta.Config}}
+{{$current_values := (raw_value_of .ResourceValue .Meta)}}
+
+<div class="qor-field collection-edit qor-fieldset-container">
+  <div class="qor-field__block">
+    {{$meta := .Meta}}
+    {{if $current_values}}
+      {{range $index, $value := $current_values }}
+        <fieldset class="qor-fieldset">
+          <div class="qor-field">
+            <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" id="Resource-{{$index}}-{{$value.Name}}">
+              <span class="qor-field__label mdl-checkbox__label">{{$value.Name}}</span>
+
+              <span class="qor-field__edit">
+                <input type="checkbox" id="Resource-{{$index}}-{{$value.Name}}" name="QorResource.ResourcePermissions[{{$index}}].Allowed" class="mdl-checkbox__input" value="true" type="checkbox" {{if $value.Allowed}}checked{{end}}>
+                <input type="hidden" name="QorResource.ResourcePermissions[{{$index}}].Allowed" value="false">
+                <input type="hidden" name="QorResource.ResourcePermissions[{{$index}}].Name" value={{$value.Name}}>
+              </span>
+            </label>
+          </div>
+
+          {{if gt (len $value.Actions) 0 }}
+            <label class="qor-field__label" for="">
+              Actions
+            </label>
+
+            {{ $flag := 0 }}
+            {{range $i, $actionValue := $value.Actions }}
+            {{ if eq (mod $i 2) 0 }}
+            <div class="qor-form-section-rows qor-section-columns-2 clearfix">
+            {{ else }}
+              {{ $flag = 1 }}
+            {{ end }}
+              <div class="qor-field">
+                <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" id="Resource-{{$index}}-Action-{{$i}}-{{$value.Name}}">
+                  <span class="qor-field__label mdl-checkbox__label">{{$actionValue.Name}}</span>
+
+                  <span class="qor-field__edit">
+                    <input type="checkbox" id="Resource-{{$index}}-Action-{{$i}}-{{$value.Name}}" name="QorResource.ResourcePermissions[{{$index}}].Actions[{{$i}}].Allowed" class="mdl-checkbox__input" value="true" type="checkbox" {{if $actionValue.Allowed}}checked{{end}}>
+                    <input type="hidden" name="QorResource.ResourcePermissions[{{$index}}].Actions[{{$i}}].Allowed" value="false">
+                    <input type="hidden" name="QorResource.ResourcePermissions[{{$index}}].Actions[{{$i}}].Name" value={{$actionValue.Name}}>
+                  </span>
+                </label>
+              </div>
+            {{ if eq $flag 1 }}
+            </div>
+            {{ $flag = 0 }}
+            {{ end }}
+            {{end}}
+          {{ end }}
+        </fieldset>
+      {{end}}
+    {{end}}
+  </div>
+</div>

@@ -13,12 +13,19 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/qor/admin"
 	. "github.com/qor/admin/tests/dummy"
+	"github.com/qor/admin/tests/utils"
 	"github.com/qor/qor"
 	"github.com/qor/qor/resource"
+
+	qorTestUtils "github.com/qor/qor/test/utils"
 )
 
 func TestUpdateRecord(t *testing.T) {
+	qorTestUtils.ResetDBTables(db, &admin.Group{}, &Language{}, &User{})
+	createLoggedInUser()
+
 	user := User{Name: "update_record", Role: "admin"}
 	db.Save(&user)
 
@@ -41,7 +48,8 @@ func TestUpdateRecord(t *testing.T) {
 }
 
 func TestUpdateRecordWithRollback(t *testing.T) {
-	db.Exec("TRUNCATE TABLE users")
+	qorTestUtils.ResetDBTables(db, &admin.Group{}, &Language{}, &User{})
+	createLoggedInUser()
 	db.Model(&User{}).AddUniqueIndex("uix_user_name", "name")
 
 	userR := Admin.GetResource("User")
@@ -89,6 +97,9 @@ func TestUpdateRecordWithRollback(t *testing.T) {
 }
 
 func TestUpdateHasOneRecord(t *testing.T) {
+	qorTestUtils.ResetDBTables(db, &admin.Group{}, &CreditCard{}, &User{})
+	createLoggedInUser()
+
 	user := User{Name: "update_record_and_has_one", Role: "admin", CreditCard: CreditCard{Number: "1234567890", Issuer: "JCB"}}
 	db.Save(&user)
 
@@ -124,6 +135,9 @@ func TestUpdateHasOneRecord(t *testing.T) {
 }
 
 func TestUpdateHasManyRecord(t *testing.T) {
+	qorTestUtils.ResetDBTables(db, &admin.Group{}, &Address{}, &User{})
+	createLoggedInUser()
+
 	user := User{Name: "update_record_and_has_many", Role: "admin", Addresses: []Address{{Address1: "address 1.1", Address2: "address 1.2"}, {Address1: "address 2.1"}, {Address1: "address 3.1"}}}
 	db.Save(&user)
 
@@ -174,6 +188,9 @@ func TestUpdateHasManyRecord(t *testing.T) {
 }
 
 func TestDestroyEmbeddedHasOneRecord(t *testing.T) {
+	qorTestUtils.ResetDBTables(db, &admin.Group{}, &CreditCard{}, &User{})
+	createLoggedInUser()
+
 	user := User{Name: "destroy_embedded_has_one_record", Role: "admin", CreditCard: CreditCard{Number: "1234567890", Issuer: "JCB"}}
 	db.Save(&user)
 
@@ -205,6 +222,9 @@ func TestDestroyEmbeddedHasOneRecord(t *testing.T) {
 }
 
 func TestUpdateManyToManyRecord(t *testing.T) {
+	qorTestUtils.ResetDBTables(db, &admin.Group{}, &Language{}, &User{})
+	createLoggedInUser()
+
 	name := "update_record_many_to_many"
 	var languageCN Language
 	var languageEN Language
@@ -241,6 +261,9 @@ func TestUpdateManyToManyRecord(t *testing.T) {
 }
 
 func TestUpdateSelectOne(t *testing.T) {
+	qorTestUtils.ResetDBTables(db, &admin.Group{}, &Company{}, &User{})
+	createLoggedInUser()
+
 	name := "update_record_select_one"
 	var company1, company2 Company
 	if err := db.FirstOrCreate(&company1, &Company{Name: "Company 1"}).Error; err != nil {
@@ -249,12 +272,12 @@ func TestUpdateSelectOne(t *testing.T) {
 	if err := db.FirstOrCreate(&company2, &Company{Name: "Company 2"}).Error; err != nil {
 		t.Fatal(err)
 	}
-	user := User{Name: name, Role: "admin", Company: &company1}
-	db.Save(&user)
+	user := User{Name: name, Role: Role_system_administrator, Company: &company1}
+	utils.AssertNoErr(t, db.Save(&user).Error)
 
 	form := url.Values{
 		"QorResource.Name":    {name + "_new"},
-		"QorResource.Role":    {"admin"},
+		"QorResource.Role":    {Role_system_administrator},
 		"QorResource.Company": {fmt.Sprint(company2.ID)},
 	}
 

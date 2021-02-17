@@ -10,10 +10,16 @@ import (
 	"github.com/jinzhu/now"
 	"github.com/qor/admin"
 	. "github.com/qor/admin/tests/dummy"
+	qorTestUtils "github.com/qor/qor/test/utils"
 	"github.com/theplant/testingutils"
 )
 
 func TestJSONTransformerEncode(t *testing.T) {
+	qorTestUtils.ResetDBTables(db, &admin.Group{}, &Language{}, &Profile{}, &CreditCard{}, &User{})
+
+	ctx := Admin.NewContext(nil, nil)
+	ctx.Context.Roles = []string{Role_system_administrator}
+
 	var (
 		buffer          bytes.Buffer
 		registeredAt    = now.MustParse("2017-01-01")
@@ -21,7 +27,7 @@ func TestJSONTransformerEncode(t *testing.T) {
 		encoder         = admin.Encoder{
 			Action:   "show",
 			Resource: Admin.GetResource("User"),
-			Context:  Admin.NewContext(nil, nil),
+			Context:  ctx,
 			Result: &User{
 				Active:       true,
 				Model:        gorm.Model{ID: 1},
@@ -81,7 +87,7 @@ func TestJSONTransformerEncode(t *testing.T) {
 
 	diff := testingutils.PrettyJsonDiff(expect, response)
 	if len(diff) > 0 {
-		t.Errorf("Got %v\n%v", string(buffer.Bytes()), diff)
+		t.Errorf("Got %v\n\n\n\n%v", string(buffer.Bytes()), diff)
 	}
 }
 

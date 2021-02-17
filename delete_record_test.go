@@ -10,7 +10,7 @@ import (
 )
 
 func TestDeleteRecord(t *testing.T) {
-	user := User{Name: "delete_record", Role: "admin"}
+	user := User{Name: "delete_record", Role: Role_system_administrator}
 	db.Save(&user)
 	form := url.Values{
 		"_method": {"delete"},

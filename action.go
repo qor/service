@@ -20,16 +20,30 @@ type ActionArgument struct {
 
 // Action action definiation
 type Action struct {
-	Name        string
-	Label       string
-	Method      string
-	URL         func(record interface{}, context *Context) string
-	URLOpenType string
-	Visible     func(record interface{}, context *Context) bool
-	Handler     func(argument *ActionArgument) error
-	Modes       []string
-	Resource    *Resource
-	Permission  *roles.Permission
+	Name             string
+	Label            string
+	Method           string
+	URL              func(record interface{}, context *Context) string
+	URLOpenType      string
+	Visible          func(record interface{}, context *Context) bool
+	Handler          func(argument *ActionArgument) error
+	Modes            []string
+	Resource         *Resource
+	Permission       *roles.Permission
+	SkipGroupControl bool
+
+	// when registering an action to a resource, it belongs to this resource. this is used for group permission
+	belongedResource *Resource
+}
+
+// SetBelongedResource sets belonged resource
+func (a *Action) SetBelongedResource(res *Resource) {
+	a.belongedResource = res
+}
+
+// GetBelongedResource gets belonged resource
+func (a *Action) GetBelongedResource() *Resource {
+	return a.belongedResource
 }
 
 // Action register action for qor resource
@@ -72,6 +86,7 @@ func (res *Resource) Action(action *Action) *Action {
 				a.Permission = action.Permission
 			}
 
+			a.SetBelongedResource(res)
 			*action = *a
 			return a
 		}
@@ -97,6 +112,7 @@ func (res *Resource) Action(action *Action) *Action {
 		}
 	}
 
+	action.SetBelongedResource(res)
 	res.actions = append(res.actions, action)
 
 	// Register Actions into Router
@@ -143,13 +159,29 @@ func (action Action) ToParam() string {
 }
 
 // HasPermission check if current user has permission for the action
-func (action Action) HasPermission(mode roles.PermissionMode, context *qor.Context) bool {
+func (action Action) HasPermission(mode roles.PermissionMode, context *qor.Context) (result bool) {
+	// Call this for action route handler permission check.
+	// This will be executed twice if this is called from IsAllowed, but always return same result
+	result = action.HasGroupPermission(context)
+
 	if action.Permission != nil {
 		var roles = []interface{}{}
 		for _, role := range context.Roles {
 			roles = append(roles, role)
 		}
-		return action.Permission.HasPermission(mode, roles...)
+		result = action.Permission.HasPermission(mode, roles...)
+	}
+
+	return
+}
+
+func (action Action) HasGroupPermission(context *qor.Context) bool {
+	if action.GetBelongedResource().GetAdmin().IsGroupEnabled() {
+		if action.SkipGroupControl {
+			return true
+		} else {
+			return ActionAllowedByGroup(context, action.GetBelongedResource().Name, action.Name)
+		}
 	}
 
 	return true
@@ -190,7 +222,7 @@ func (actionArgument *ActionArgument) FindSelectedRecords() []interface{} {
 }
 
 // IsAllowed check if current user has permission to view the action
-func (action Action) isAllowed(mode roles.PermissionMode, context *Context, records ...interface{}) bool {
+func (action Action) IsAllowed(mode roles.PermissionMode, context *Context, records ...interface{}) (result bool) {
 	if action.Visible != nil {
 		if len(records) == 0 {
 			if !action.Visible(nil, context) {
@@ -204,12 +236,19 @@ func (action Action) isAllowed(mode roles.PermissionMode, context *Context, reco
 		}
 	}
 
+	result = action.HasGroupPermission(context.Context)
+
 	if action.Permission != nil {
-		return action.HasPermission(mode, context.Context)
+		result = action.HasPermission(mode, context.Context)
+		return
 	}
 
-	if context.Resource != nil {
-		return context.Resource.HasPermission(mode, context.Context)
+	// When group is enabled, do not fallback to check resource permission
+	// since when user can access this action, the resource must be accessible.
+	if context.Resource != nil && !context.Admin.IsGroupEnabled() {
+		result = context.Resource.HasPermission(mode, context.Context)
+		return
 	}
-	return true
+
+	return
 }

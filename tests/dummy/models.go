@@ -62,3 +62,15 @@ type Phone struct {
 	ProfileID uint64
 	Num       string
 }
+
+func (u User) DisplayName() string {
+	return u.Name
+}
+
+func (u User) GetID() uint {
+	return u.ID
+}
+
+func (u User) GetUsersByIDs(db *gorm.DB, ids []string) interface{} {
+	return u
+}

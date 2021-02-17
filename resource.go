@@ -18,15 +18,16 @@ import (
 
 // Config resource config struct
 type Config struct {
-	Name       string
-	IconName   string
-	Menu       []string
-	Permission *roles.Permission
-	Themes     []ThemeInterface
-	Priority   int
-	Singleton  bool
-	Invisible  bool
-	PageCount  int
+	Name             string
+	IconName         string
+	Menu             []string
+	Permission       *roles.Permission
+	Themes           []ThemeInterface
+	Priority         int
+	Singleton        bool
+	Invisible        bool
+	SkipGroupControl bool
+	PageCount        int
 }
 
 // Resource is the most important thing for qor admin, every model is defined as a resource, qor admin will genetate management interface based on its definition
@@ -36,13 +37,13 @@ type Resource struct {
 	ParentResource *Resource
 	SearchHandler  func(keyword string, context *qor.Context) *gorm.DB
 
-	params  string
-	admin   *Admin
-	metas   []*Meta
-	actions []*Action
-	scopes  []*Scope
-	filters []*Filter
-	mounted bool
+	params   string
+	admin    *Admin
+	metas    []*Meta
+	actions  []*Action
+	scopes   []*Scope
+	filters  []*Filter
+	mounted  bool
 	sections struct {
 		IndexSections                  []*Section
 		OverriddingIndexAttrs          bool

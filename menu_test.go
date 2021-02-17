@@ -120,3 +120,46 @@ func TestMenuPriority(t *testing.T) {
 		}
 	}
 }
+
+func TestGetSelfMenuTree(t *testing.T) {
+	admin := New(&qor.Config{})
+	admin.router.Prefix = "/admin"
+
+	gfMenu := admin.AddMenu(&Menu{Name: "Grandfather"})
+	admin.AddMenu(&Menu{Name: "Father1", Ancestors: []string{"Grandfather"}})
+	f2Menu := admin.AddMenu(&Menu{Name: "Father2", Ancestors: []string{"Grandfather"}})
+	c1Menu := admin.AddMenu(&Menu{Name: "Child1", Ancestors: []string{"Grandfather", "Father1"}})
+
+	f3Menu := admin.AddMenu(&Menu{Name: "Father3"})
+	c2Menu := admin.AddMenu(&Menu{Name: "Child2", Ancestors: []string{"Father3"}})
+
+	// return all end offsprings menus
+	result := GetSelfMenuTree(gfMenu)
+	if want, got := 2, len(result); want != got {
+		t.Errorf("expect to have %d offspring menu but got %d", want, got)
+	}
+
+	for _, r := range result {
+		if r != c1Menu && r != f2Menu {
+			t.Error("expected c1 and f2 not all included in the result")
+		}
+	}
+
+	// returns it only sub menu
+	f3Result := GetSelfMenuTree(f3Menu)
+	if want, got := 1, len(f3Result); want != got {
+		t.Errorf("expect to have %d offspring menu but got %d", want, got)
+	}
+	if f3Result[0] != c2Menu {
+		t.Error("expected c2 not included in the result")
+	}
+
+	// for an end offspring menu, return itself
+	c2Result := GetSelfMenuTree(c2Menu)
+	if want, got := 1, len(c2Result); want != got {
+		t.Errorf("expect to have %d offspring menu but got %d", want, got)
+	}
+	if c2Result[0] != c2Menu {
+		t.Error("expected c2 not included in the result")
+	}
+}

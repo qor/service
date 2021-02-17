@@ -51,3 +51,40 @@ func RegisterViewPath(pth string) {
 func equal(a, b interface{}) bool {
 	return reflect.DeepEqual(a, b)
 }
+
+// Contains determine whether the second parameter(single) is contained by
+// the first parameter(collection)
+func Contains(a interface{}, b interface{}) bool {
+	if _, ok := b.(int); ok {
+		if tempB, ok := a.([]int); ok {
+			for _, v := range tempB {
+				if b == v {
+					return true
+				}
+			}
+		}
+	}
+
+	if _, ok := b.(uint); ok {
+		if tempB, ok := a.([]uint); ok {
+			for _, v := range tempB {
+				if b == v {
+					return true
+				}
+			}
+		}
+	}
+
+	if _, ok := b.(string); ok {
+		if tempB, ok := a.([]string); ok {
+			for _, v := range tempB {
+				if b == v {
+					return true
+				}
+			}
+		}
+
+	}
+
+	return false
+}
