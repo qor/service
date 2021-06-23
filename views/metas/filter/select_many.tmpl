@@ -15,15 +15,12 @@
     <label class="qor-field__label">
       {{t (printf "%v.filter.%v" .Resource.ToParam .Filter.Label) .Filter.Label}}
   </label>
-  <select data-toggle="qor.chooser" multiple="multiple" {{if $value}}chooser-selected="true"{{end}} data-placeholder="{{t (printf "%v.filter.%v" .Resource.ToParam .Filter.Label) .Filter.Label}}" name="{{.InputNamePrefix}}.Value" data-allow-clear="true" {{if .Filter.Config.RemoteDataResource}}data-remote-data="true" data-remote-url="{{url_for .Filter.Config.RemoteDataResource}}"{{end}} filter-required>
+  <select data-toggle="qor.chooser" selectall="selectall" multiple="multiple" {{if $value}}chooser-selected="true"{{end}} data-placeholder="{{t (printf "%v.filter.%v" .Resource.ToParam .Filter.Label) .Filter.Label}}" name="{{.InputNamePrefix}}.Value" data-allow-clear="true" {{if .Filter.Config.RemoteDataResource}}data-remote-data="true" data-remote-url="{{url_for .Filter.Config.RemoteDataResource}}"{{end}} filter-required>
     {{if .Filter.Config.RemoteDataResource}}
       {{range $v:=$value}}
         <option value="{{primary_key_of $v}}" selected>{{stringify $v}}</option>
-      {{else}}
-      <option></option>
       {{end}}
     {{else}}
-      <option></option>
       {{range $values := (.Filter.Config.GetCollection nil .Context)}}
         {{if (is_included $value (index $values 0))}}
           <option value="{{index $values 0}}" selected>{{index $values 1}}</option>

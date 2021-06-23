@@ -68,6 +68,30 @@
 
             $this.select2(option);
 
+            if ($this.is('[selectall]')) {
+                if(select2Data.remoteUrl) {
+                    $.ajax({
+                        url: select2Data.remoteUrl,
+                        dataType: 'json'
+                    }).then(function (data) {
+                        data.forEach(function(item) {  
+                            if($this.find('option[value="'+item.ID+'"]').length < 1) {
+                                $this.append(new Option(item.Name, item.ID, false, false));
+                            }
+                        });
+                    });
+                }
+
+                $this.next('.select2-container').find('.select2-selection--multiple')
+                    .prepend('<span class="select2-selection__select-all" title="Select all items">&equiv;</span>')
+                    .find('.select2-selection__select-all').on('click', function(evt) {
+                        var $select = $(evt.target).closest('.select2-container').prev('select[data-toggle="'+NAMESPACE+'"]');
+                        evt.stopPropagation();
+                        $select.find('option').prop('selected', 'selected');
+                        $select.trigger('change');
+                    });
+            }
+
             // reset select2 container width
             this.resetSelect2Width();
             resetSelect2Width = window._.debounce(this.resetSelect2Width.bind(this), 300);

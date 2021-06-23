@@ -57,14 +57,22 @@
         height: auto;
         margin-top: 0;
         line-height: 1;
-        .select2-selection__clear {
+        .select2-selection__rendered {
+            padding-right: 36px;
+        }
+        .select2-selection__clear,
+        .select2-selection__select-all {
             font-size: 20px;
-            padding: 0 8px;
+            padding: 0 2px;
             margin: 0;
             line-height: 28px;
             position: absolute;
             top: 2px;
-            right: 2px;
+            right: 8px;
+            cursor: pointer;
+        }
+        .select2-selection__clear {
+            right: 24px;
         }
         .select2-selection__choice {
             padding: 0 6px 0px 2px;
