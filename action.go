@@ -156,17 +156,31 @@ func (action Action) HasPermission(mode roles.PermissionMode, context *qor.Conte
 }
 
 // FindSelectedRecords find selected records when run bulk actions
-func (actionArgument *ActionArgument) FindSelectedRecords() []interface{} {
+func (actionArgument *ActionArgument) FindSelectedRecords() (records []interface{}) {
+
+	results := actionArgument.Context.Resource.NewSlice()
+
+	actionArgument.LoadSelectedRecords(results)
+
+	resultValues := reflect.Indirect(reflect.ValueOf(results))
+	for i := 0; i < resultValues.Len(); i++ {
+		records = append(records, resultValues.Index(i).Interface())
+	}
+	
+	return
+}
+
+// LoadSelectedRecords load selected records when run bulk actions
+func (actionArgument *ActionArgument) LoadSelectedRecords(out interface{}) {
 	var (
 		context   = actionArgument.Context
 		resource  = context.Resource
-		records   = []interface{}{}
 		sqls      []string
 		sqlParams []interface{}
 	)
 
 	if len(actionArgument.PrimaryValues) == 0 {
-		return records
+		return
 	}
 
 	clone := context.clone()
@@ -180,13 +194,16 @@ func (actionArgument *ActionArgument) FindSelectedRecords() []interface{} {
 		clone.SetDB(clone.GetDB().Where(strings.Join(sqls, " OR "), sqlParams...))
 		clone.Searcher.Pagination.CurrentPage = -1
 	}
-	results, _ := clone.FindMany()
 
-	resultValues := reflect.Indirect(reflect.ValueOf(results))
-	for i := 0; i < resultValues.Len(); i++ {
-		records = append(records, resultValues.Index(i).Interface())
+	context = clone.Searcher.parseContext(true)
+
+	if context.HasError() {
+		return
 	}
-	return records
+
+	clone.Searcher.Resource.CallFindMany(out, context)
+
+	return
 }
 
 // IsAllowed check if current user has permission to view the action
