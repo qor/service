@@ -22,7 +22,7 @@
     EVENT_SUBMIT = "submit." + NAMESPACE;
 
   function getExtraPairs(names) {
-    let pairs = decodeURIComponent(location.search.substr(1)).split("&"),
+    let pairs = decodeURIComponent(location.search.replace(/page=\d+/,'page=1').substr(1)).split("&"),
       pairsObj = {},
       pair,
       i;

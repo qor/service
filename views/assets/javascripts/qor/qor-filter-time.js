@@ -223,7 +223,7 @@
 
         search: function() {
             var $searchParam = this.$searchParam,
-                href = location.href,
+                href = location.href.replace(/page=\d+/,'page=1'),
                 _this = this,
                 type = 'qor.filter.time';
 
