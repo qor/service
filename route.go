@@ -108,25 +108,25 @@ func (r *Router) GetMiddleware(name string) *Middleware {
 }
 
 // Get register a GET request handle with the given path
-func (r *Router) Get(path string, handle requestHandler, config ...*RouteConfig) {
+func (r *Router) Get(path string, handle RequestHandler, config ...*RouteConfig) {
 	r.routers["GET"] = append(r.routers["GET"], newRouteHandler(path, handle, config...))
 	r.sortRoutes(r.routers["GET"])
 }
 
 // Post register a POST request handle with the given path
-func (r *Router) Post(path string, handle requestHandler, config ...*RouteConfig) {
+func (r *Router) Post(path string, handle RequestHandler, config ...*RouteConfig) {
 	r.routers["POST"] = append(r.routers["POST"], newRouteHandler(path, handle, config...))
 	r.sortRoutes(r.routers["POST"])
 }
 
 // Put register a PUT request handle with the given path
-func (r *Router) Put(path string, handle requestHandler, config ...*RouteConfig) {
+func (r *Router) Put(path string, handle RequestHandler, config ...*RouteConfig) {
 	r.routers["PUT"] = append(r.routers["PUT"], newRouteHandler(path, handle, config...))
 	r.sortRoutes(r.routers["PUT"])
 }
 
 // Delete register a DELETE request handle with the given path
-func (r *Router) Delete(path string, handle requestHandler, config ...*RouteConfig) {
+func (r *Router) Delete(path string, handle RequestHandler, config ...*RouteConfig) {
 	r.routers["DELETE"] = append(r.routers["DELETE"], newRouteHandler(path, handle, config...))
 	r.sortRoutes(r.routers["DELETE"])
 }
@@ -343,7 +343,7 @@ func (admin *Admin) RegisterResourceRouters(res *Resource, actions ...string) {
 }
 
 // RegisterRoute register route
-func (res *Resource) RegisterRoute(method string, relativePath string, handler requestHandler, config *RouteConfig) {
+func (res *Resource) RegisterRoute(method string, relativePath string, handler RequestHandler, config *RouteConfig) {
 	if config == nil {
 		config = &RouteConfig{}
 	}
