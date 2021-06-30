@@ -101,12 +101,14 @@
                 scrollTop = this.$content.scrollTop(),
                 offsetTop = this.$subHeader.outerHeight() + this.paddingHeight + this.marginBottomPX,
                 headerHeight = $('.qor-page__header').outerHeight(),
-                pageTop = this.$content.offset().top + $(CLASS_HEADER).height();
+                pageTop = this.$content.offset().top + $(CLASS_HEADER).height(),
+                tableLeft = $element.offset().left;
 
             if (scrollTop > offsetTop - headerHeight) {
-                $thead.css({top: pageTop});
+                $thead.css({top: pageTop, left: tableLeft});
                 $element.addClass(CLASS_FIXED_TABLE);
             } else {
+                $thead.css({top: 0, left: 0});
                 $element.removeClass(CLASS_FIXED_TABLE);
             }
         },
